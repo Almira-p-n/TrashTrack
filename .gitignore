@@ -1,0 +1,47 @@
+# ==========================================
+# 🔒 RAHASIA & SENSITIF (JANGAN UPLOAD)
+# ==========================================
+.env
+*.pem
+*.key
+
+# ==========================================
+# 🐍 PYTHON SYSTEM FILES
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ==========================================
+# 📦 DATABASE & DATA LOKAL
+# ==========================================
+instance/
+*.db
+*.sqlite
+*.sqlite3
+trashtrack.db
+
+# ==========================================
+# 📸 USER UPLOADS (Gambar hasil scan user)
+# ==========================================
+static/uploads/*
+# Tapi jangan hapus folder-nya, cukup isinya saja
+!static/uploads/.gitkeep
+
+# ==========================================
+#  OS FILES (Bersihkan folder)
+# ==========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

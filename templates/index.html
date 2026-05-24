@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Home - TrashTrack{% endblock %}
+{% block content %}
+<div class="hero-section">
+    <div class="hero-content">
+        <div class="hero-icon">
+            <i class="fas fa-recycle"></i>
+        </div>
+        <h1>TrashTrack</h1>
+        <p class="hero-subtitle">Smart Waste Classifier</p>
+        <p class="hero-description">
+            Aplikasi untuk membantu menentukan sampah harus dibuang ke tong warna apa 
+            (MERAH, KUNING, atau HIJAU) menggunakan kamera HP.
+        </p>
+        
+        <div class="trash-bins">
+            <div class="bin-item merah">
+                <div class="bin-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <h3>MERAH</h3>
+                <p>B3 / Berbahaya</p>
+            </div>
+            <div class="bin-item kuning">
+                <div class="bin-icon"><i class="fas fa-recycle"></i></div>
+                <h3>KUNING</h3>
+                <p>Anorganik</p>
+            </div>
+            <div class="bin-item hijau">
+                <div class="bin-icon"><i class="fas fa-leaf"></i></div>
+                <h3>HIJAU</h3>
+                <p>Organik</p>
+            </div>
+        </div>
+
+        <a href="{{ url_for('scan') }}" class="btn-primary btn-large">
+            <i class="fas fa-camera"></i>
+            Scan Sampah Sekarang
+        </a>
+    </div>
+</div>
+
+<div class="features-section">
+    <h2 class="section-title">Fitur Utama</h2>
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-camera"></i></div>
+            <h3>Scan dengan Kamera</h3>
+            <p>Pindai sampah menggunakan kamera HP secara real-time</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-brain"></i></div>
+            <h3>Klasifikasi AI</h3>
+            <p>AI mengenali jenis sampah dan menentukan kategori tong yang tepat</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-info-circle"></i></div>
+            <h3>Edukasi Sampah</h3>
+            <p>Informasi lengkap tentang setiap jenis sampah dan cara daur ulang</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-chart-bar"></i></div>
+            <h3>Riwayat & Statistik</h3>
+            <p>Lihat riwayat scan dan statistik kategori sampah</p>
+        </div>
+    </div>
+</div>
+
+<div class="how-it-works">
+    <h2 class="section-title">Cara Penggunaan</h2>
+    <div class="steps">
+        <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <h3>Buka Aplikasi</h3>
+                <p>Pengguna membuka aplikasi TrashTrack di HP</p>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <h3>Scan Sampah</h3>
+                <p>Arahkan kamera ke sampah dan ambil gambar</p>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <h3>Proses Deteksi</h3>
+                <p>Sistem AI memproses gambar dan mengenali jenis sampah</p>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-content">
+                <h3>Hasil Klasifikasi</h3>
+                <p>Aplikasi menampilkan kategori tong yang sesuai</p>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-number">5</div>
+            <div class="step-content">
+                <h3>Buang ke Tempatnya</h3>
+                <p>Buang sampah ke tong warna yang sesuai</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

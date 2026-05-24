@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Edukasi Sampah - TrashTrack{% endblock %}
+{% block content %}
+<div class="education-container">
+    <h1 class="page-title"><i class="fas fa-book-open"></i> Edukasi Tempat Sampah</h1>
+    <p class="page-subtitle">Pelajari arti warna tong sampah di sekolahmu</p>
+
+    <div class="education-grid">
+        {% for kode, info in kategori.items() %}
+        <div class="edu-card {{ kode }}">
+            <div class="edu-icon"><span>{{ info['icon'] }}</span></div>
+            <h3>{{ info['nama'] }}</h3>
+            <p class="edu-desc">{{ info['penjelasan'] }}</p>
+            <div class="edu-examples">
+                <h4>Contoh Sampah:</h4>
+                <div class="tags">
+                    {% for contoh in info['contoh'].split(', ') %}
+                    <span>{{ contoh }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="edu-tip">
+                <i class="fas fa-lightbulb"></i>
+                <span>Pastikan sampah sudah bersih sebelum dibuang!</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="edu-banner">
+        <i class="fas fa-hand-holding-heart"></i>
+        <div>
+            <h3>Jadilah Pelajar Peduli Lingkungan!</h3>
+            <p>Membuang sampah pada tempatnya adalah langkah kecil untuk perubahan besar. 🌍</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

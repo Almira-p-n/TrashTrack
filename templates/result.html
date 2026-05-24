@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %}Hasil Deteksi - TrashTrack{% endblock %}
+{% block content %}
+<div class="result-container">
+    <div class="result-card kategori-{{ scan.kategori }}">
+        <div class="result-header">
+            <h2>Hasil Deteksi</h2>
+            <span class="badge {{ scan.kategori }}">{{ kategori_info['nama'] }}</span>
+        </div>
+        
+        <div class="result-image">
+            <img src="/static/{{ scan.gambar_path }}" alt="{{ scan.sampah_nama }}">
+            <div class="scan-overlay">
+                <i class="fas fa-check-circle"></i>
+            </div>
+        </div>
+
+        <div class="result-info">
+            <h3>Buang ke Tong <span class="highlight-kategori">{{ scan.kategori.upper() }}</span></h3>
+            <p class="kategori-umum">
+                {% if scan.kategori == 'merah' %}B3 / Berbahaya
+                {% elif scan.kategori == 'kuning' %}Anorganik
+                {% elif scan.kategori == 'hijau' %}Organik
+                {% endif %}
+            </p>
+
+            <div class="confidence-bar">
+                <div class="confidence-label">
+                    <span>Tingkat Keyakinan AI</span>
+                    <span class="confidence-value">{{ scan.confidence }}%</span>
+                </div>
+                <div class="bar-bg">
+                    <div class="bar-fill" style="width: 0%" data-width="{{ scan.confidence }}%"></div>
+                </div>
+            </div>
+
+            <div class="reason-box">
+                <h4><i class="fas fa-lightbulb"></i> Alasan Klasifikasi</h4>
+                <p>{{ kategori_info['penjelasan'] }}</p>
+            </div>
+
+            {% if scan.confidence < 85 %}
+            <div class="correction-box">
+                <p><i class="fas fa-exclamation-circle"></i> Hasil kurang tepat?</p>
+                <button onclick="showCorrectionModal()" class="btn-correction">
+                    <i class="fas fa-edit"></i> Koreksi Hasil Deteksi
+                </button>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="result-actions">
+            <a href="{{ url_for('detail', scan_id=scan.id) }}" class="btn btn-detail">
+                <i class="fas fa-info-circle"></i> Lihat Detail
+            </a>
+            <a href="{{ url_for('scan') }}" class="btn btn-scan-again">
+                <i class="fas fa-redo"></i> Scan Lagi
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Correction Modal -->
+<div id="correctionModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Koreksi Hasil Deteksi</h3>
+            <button onclick="closeCorrectionModal()" class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Pilih jenis sampah yang sesuai:</p>
+            <form action="{{ url_for('update_classification', scan_id=scan.id) }}" method="POST">
+                <div class="kategori-options">
+                    <label class="option-card merah">
+                        <input type="radio" name="kategori" value="merah" {% if scan.kategori == 'merah' %}checked{% endif %}>
+                        <div class="option-content">
+                            <span class="option-icon">⚠️</span>
+                            <span class="option-label">B3/Berbahaya</span>
+                            <small>Baterai, kaca, lampu</small>
+                        </div>
+                    </label>
+                    <label class="option-card kuning">
+                        <input type="radio" name="kategori" value="kuning" {% if scan.kategori == 'kuning' %}checked{% endif %}>
+                        <div class="option-content">
+                            <span class="option-icon">♻️</span>
+                            <span class="option-label">Anorganik</span>
+                            <small>Plastik, kertas, kaleng</small>
+                        </div>
+                    </label>
+                    <label class="option-card hijau">
+                        <input type="radio" name="kategori" value="hijau" {% if scan.kategori == 'hijau' %}checked{% endif %}>
+                        <div class="option-content">
+                            <span class="option-icon">🌱</span>
+                            <span class="option-label">Organik</span>
+                            <small>Daun, sisa makanan</small>
+                        </div>
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">
+                    <i class="fas fa-save"></i> Simpan Koreksi
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.correction-box {
+    background: #FEF3C7;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1.5rem;
+    text-align: center;
+    border-left: 4px solid #F59E0B;
+}
+.correction-box p { margin-bottom: 0.8rem; color: #92400E; font-weight: 600; }
+.btn-correction {
+    background: #F59E0B; color: white; border: none; padding: 0.8rem 1.5rem;
+    border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s;
+}
+.btn-correction:hover { background: #D97706; }
+.modal {
+    display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+    width: 100%; height: 100%; background: rgba(0,0,0,0.5);
+}
+.modal-content {
+    background: white; margin: 5% auto; padding: 2rem; border-radius: 16px;
+    max-width: 500px; animation: slideUp 0.3s;
+}
+.modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid #E5E7EB;
+}
+.modal-close { background: none; border: none; font-size: 2rem; cursor: pointer; color: #6B7280; }
+.kategori-options { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem; }
+.option-card {
+    border: 2px solid #E5E7EB; border-radius: 12px; padding: 1rem; cursor: pointer; transition: 0.3s;
+}
+.option-card input[type="radio"] { display: none; }
+.option-card:hover { transform: scale(1.02); }
+.option-card.merah input:checked + .option-content { background: #FEE2E2; }
+.option-card.kuning input:checked + .option-content { background: #FEF3C7; }
+.option-card.hijau input:checked + .option-content { background: #DCFCE7; }
+.option-content { display: flex; align-items: center; gap: 1rem; padding: 0.5rem; border-radius: 8px; }
+.option-icon { font-size: 2rem; }
+.option-label { font-weight: 700; flex: 1; }
+.btn-full { width: 100%; }
+@keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+</style>
+
+<script>
+function showCorrectionModal() { document.getElementById('correctionModal').style.display = 'block'; }
+function closeCorrectionModal() { document.getElementById('correctionModal').style.display = 'none'; }
+window.onclick = function(event) {
+    const modal = document.getElementById('correctionModal');
+    if (event.target == modal) { modal.style.display = 'none'; }
+}
+</script>
+{% endblock %}

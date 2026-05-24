@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Detail Sampah - TrashTrack{% endblock %}
+{% block content %}
+<div class="detail-container">
+    <button onclick="history.back()" class="btn-back"><i class="fas fa-arrow-left"></i> Kembali</button>
+    
+    <div class="detail-card kategori-{{ scan.kategori }}">
+        <div class="detail-header">
+            <img src="/static/{{ scan.gambar_path }}" alt="{{ scan.sampah_nama }}"
+                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22%3E%3Crect fill=%22%23ddd%22 width=%22400%22 height=%22300%22/%3E%3Ctext fill=%22%23999%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22%3EGambar tidak tersedia%3C/text%3E%3C/svg%3E'">
+            <div class="detail-meta">
+                <h2>{{ scan.sampah_nama }}</h2>
+                <span class="badge {{ scan.kategori }}">{{ kategori_info['nama'] }}</span>
+            </div>
+        </div>
+
+        <div class="detail-section">
+            <h3><i class="fas fa-list-check"></i> Ciri-ciri</h3>
+            <p>{{ kategori_info['penjelasan'] }}</p>
+        </div>
+
+        <div class="detail-section">
+            <h3><i class="fas fa-box-open"></i> Contoh Lainnya</h3>
+            <div class="examples-grid">
+                {% for contoh in kategori_info['contoh'].split(', ') %}
+                <span class="example-tag">{{ contoh }}</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="detail-section recycle-tips">
+            <h3><i class="fas fa-recycle"></i> Cara Daur Ulang / Pembuangan</h3>
+            <ul>
+                <li><i class="fas fa-check"></i> Bersihkan sisa makanan/minuman</li>
+                <li><i class="fas fa-check"></i> Pipihkan jika memungkinkan</li>
+                <li><i class="fas fa-check"></i> Masukkan ke tong {{ scan.kategori.upper() }}</li>
+            </ul>
+        </div>
+
+        <div class="detail-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>Ingat! Buang sampah pada tempatnya demi lingkungan yang lebih bersih.</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

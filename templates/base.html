@@ -1,0 +1,1926 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TrashTrack{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('index') }}" class="nav-brand">
+                <i class="fas fa-recycle"></i>
+                TrashTrack
+            </a>
+            <button class="nav-toggle" id="navToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}active{% endif %}">
+                    <i class="fas fa-home"></i> Home
+                </a></li>
+                <li><a href="{{ url_for('scan') }}" class="{% if request.endpoint == 'scan' %}active{% endif %}">
+                    <i class="fas fa-camera"></i> Scan
+                </a></li>
+                <li><a href="{{ url_for('history') }}" class="{% if request.endpoint == 'history' %}active{% endif %}">
+                    <i class="fas fa-history"></i> Riwayat
+                </a></li>
+                <li><a href="{{ url_for('education') }}" class="{% if request.endpoint == 'education' %}active{% endif %}">
+                    <i class="fas fa-book"></i> Edukasi
+                </a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">
+                        <i class="fas fa-{% if category == 'error' %}exclamation-circle{% else %}check-circle{% endif %}"></i>
+                        {{ message }}
+                        <button class="flash-close" onclick="this.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="bottom-nav">
+        <a href="{{ url_for('index') }}" class="bottom-nav-item {% if request.endpoint == 'index' %}active{% endif %}">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="{{ url_for('scan') }}" class="bottom-nav-item {% if request.endpoint == 'scan' %}active{% endif %}">
+            <i class="fas fa-camera"></i>
+            <span>Scan</span>
+        </a>
+        <a href="{{ url_for('history') }}" class="bottom-nav-item {% if request.endpoint == 'history' %}active{% endif %}">
+            <i class="fas fa-history"></i>
+            <span>Riwayat</span>
+        </a>
+        <a href="{{ url_for('education') }}" class="bottom-nav-item {% if request.endpoint == 'education' %}active{% endif %}">
+            <i class="fas fa-book"></i>
+            <span>Edukasi</span>
+        </a>
+    </nav>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+
+    <!-- CHATBOT WIDGET -->
+    <div class="chatbot-container">
+        <!-- Chat Window -->
+        <div class="chat-window" id="chatWindow">
+            <div class="chat-header">
+                <div class="chat-header-info">
+                    <span class="chat-title">🌍 EcoBot</span>
+                    <span class="chat-subtitle">Tanya seputar sampah</span>
+                </div>
+                <button class="chat-close" onclick="toggleChat()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot-message">
+                    <div class="message-content">
+                        <i class="fas fa-robot"></i>
+                        <div class="message-text">
+                            Halo! 👋<br>
+                            Aku <b>EcoBot</b>! 🤖<br>
+                            Tanya apa aja seputar sampah & lingkungan.<br>
+                            Jawaban 100% dari database edukasi! 🌱
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-input-container">
+                <input type="text" id="chatInput" placeholder="Contoh: Cara daur ulang plastik..." 
+                    onkeypress="if(event.key==='Enter') sendMessage()">
+                <button class="chat-send" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            
+            <div class="chat-sources">
+                <small>📚 Sumber: Database Edukasi Sampah</small>
+            </div>
+        </div>
+        
+        <!-- Animated Icon Button -->
+        <div class="chatbot-icon" onclick="toggleChat()" id="chatbotIcon">
+            <div class="icon-wrapper">
+                <!-- Cute Recycling Bin Character -->
+                <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Body (Bin) -->
+                    <rect x="10" y="25" width="40" height="30" rx="5" fill="#10B981" stroke="#059669" stroke-width="2"/>
+                    <!-- Lid -->
+                    <rect x="8" y="20" width="44" height="8" rx="2" fill="#34D399" stroke="#059669" stroke-width="2"/>
+                    <!-- Handle -->
+                    <rect x="25" y="15" width="10" height="8" rx="2" fill="#6EE7B7" stroke="#059669" stroke-width="2"/>
+                    <!-- Eyes -->
+                    <circle cx="23" cy="35" r="3" fill="white" stroke="#059669" stroke-width="1.5"/>
+                    <circle cx="37" cy="35" r="3" fill="white" stroke="#059669" stroke-width="1.5"/>
+                    <circle cx="23" cy="35" r="1.5" fill="#059669"/>
+                    <circle cx="37" cy="35" r="1.5" fill="#059669"/>
+                    <!-- Smile -->
+                    <path d="M25 42 Q30 46 35 42" stroke="#059669" stroke-width="2" fill="none" stroke-linecap="round"/>
+                    <!-- Recycle Symbol on Body -->
+                    <path d="M18 48 L22 48 L20 52 Z" fill="white" opacity="0.8"/>
+                    <path d="M30 47 L30 51 L34 49 Z" fill="white" opacity="0.8"/>
+                    <path d="M38 48 L42 48 L40 52 Z" fill="white" opacity="0.8"/>
+                </svg>
+                <!-- Pulse Effect -->
+                <div class="pulse-ring"></div>
+                <!-- Notification Dot -->
+                <div class="notification-dot" id="notifDot" style="display:none;">
+                    <span>!</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+    /* Chatbot Styles */
+    .chatbot-container {
+        position: fixed;
+        bottom: 90px;
+        left: 20px;
+        z-index: 9999;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    /* Animated Icon */
+    .chatbot-icon {
+        width: 60px;
+        height: 60px;
+        cursor: pointer;
+        position: relative;
+        transition: transform 0.3s ease;
+    }
+
+    .chatbot-icon:hover {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .icon-wrapper {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        animation: bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+    }
+
+    .pulse-ring {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: rgba(16, 185, 129, 0.4);
+        animation: pulse 2s ease-out infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(1.5); opacity: 0; }
+    }
+
+    .notification-dot {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        width: 24px;
+        height: 24px;
+        background: #EF4444;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 14px;
+        animation: shake 0.5s ease-in-out;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: rotate(0); }
+        25% { transform: rotate(-10deg); }
+        75% { transform: rotate(10deg); }
+    }
+
+    /* Chat Window */
+    .chat-window {
+        width: 350px;
+        height: 500px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+        animation: slideUp 0.3s ease;
+        margin-bottom: 10px;
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .chat-header {
+        background: linear-gradient(135deg, #10B981, #059669);
+        color: white;
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .chat-header-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .chat-title {
+        font-weight: 700;
+        font-size: 16px;
+    }
+
+    .chat-subtitle {
+        font-size: 12px;
+        opacity: 0.9;
+    }
+
+    .chat-close {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        color: white;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .chat-close:hover {
+        background: rgba(255,255,255,0.3);
+        transform: rotate(90deg);
+    }
+
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 15px;
+        background: #F0FDF4;
+    }
+
+    .message {
+        margin-bottom: 15px;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message-content {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .bot-message .message-content {
+        flex-direction: row;
+    }
+
+    .user-message {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .message-text {
+        background: white;
+        padding: 10px 14px;
+        border-radius: 12px;
+        max-width: 250px;
+        font-size: 14px;
+        line-height: 1.5;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .bot-message .message-text {
+        background: white;
+        border-bottom-left-radius: 4px;
+    }
+
+    .user-message .message-text {
+        background: #10B981;
+        color: white;
+        border-bottom-right-radius: 4px;
+    }
+
+    .message i {
+        font-size: 20px;
+        color: #10B981;
+        flex-shrink: 0;
+    }
+
+    .chat-input-container {
+        display: flex;
+        padding: 12px;
+        background: white;
+        border-top: 1px solid #E5E7EB;
+        gap: 8px;
+    }
+
+    .chat-input-container input {
+        flex: 1;
+        padding: 10px 14px;
+        border: 2px solid #E5E7EB;
+        border-radius: 25px;
+        outline: none;
+        font-size: 14px;
+        transition: 0.3s;
+    }
+
+    .chat-input-container input:focus {
+        border-color: #10B981;
+    }
+
+    .chat-send {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #10B981;
+        border: none;
+        color: white;
+        cursor: pointer;
+        transition: 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .chat-send:hover {
+        background: #059669;
+        transform: scale(1.1);
+    }
+
+    .chat-send:active {
+        transform: scale(0.95);
+    }
+
+    .chat-sources {
+        padding: 8px 12px;
+        background: #F9FAFB;
+        border-top: 1px solid #E5E7EB;
+        text-align: center;
+        color: #6B7280;
+    }
+
+    .typing-indicator {
+        display: flex;
+        gap: 4px;
+        padding: 10px 14px;
+        background: white;
+        border-radius: 12px;
+        border-bottom-left-radius: 4px;
+        width: fit-content;
+    }
+
+    .typing-indicator span {
+        width: 8px;
+        height: 8px;
+        background: #10B981;
+        border-radius: 50%;
+        animation: typing 1.4s infinite;
+    }
+
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typing {
+        0%, 60%, 100% { transform: translateY(0); }
+        30% { transform: translateY(-10px); }
+    }
+
+    /* Scrollbar */
+    .chat-messages::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .chat-messages::-webkit-scrollbar-track {
+        background: #F1F1F1;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+        background: #10B981;
+        border-radius: 3px;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+        .chat-window {
+            width: 300px;
+            height: 450px;
+        }
+        .chatbot-container {
+            left: 10px;
+            bottom: 85px;
+        }
+    }
+    </style>
+
+    <script>
+    let isChatOpen = false;
+
+    function toggleChat() {
+        const chatWindow = document.getElementById('chatWindow');
+        const icon = document.getElementById('chatbotIcon');
+        
+        isChatOpen = !isChatOpen;
+        
+        if (isChatOpen) {
+            chatWindow.style.display = 'flex';
+            icon.style.display = 'none';
+            document.getElementById('chatInput').focus();
+        } else {
+            chatWindow.style.display = 'none';
+            icon.style.display = 'block';
+        }
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('chatInput');
+        const messages = document.getElementById('chatMessages');
+        const message = input.value.trim();
+        
+        if (!message) return;
+        
+        // User message
+        const userDiv = document.createElement('div');
+        userDiv.className = 'message user-message';
+        userDiv.innerHTML = `
+            <div class="message-text">${escapeHtml(message)}</div>
+        `;
+        messages.appendChild(userDiv);
+        
+        input.value = '';
+        messages.scrollTop = messages.scrollHeight;
+        
+        // Typing indicator
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'message bot-message';
+        typingDiv.id = 'typing';
+        typingDiv.innerHTML = `
+            <div class="message-content">
+                <i class="fas fa-robot"></i>
+                <div class="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        `;
+        messages.appendChild(typingDiv);
+        messages.scrollTop = messages.scrollHeight;
+        
+        // Search from Google
+        try {
+            const response = await searchFromGoogle(message);
+            
+            // Remove typing indicator
+            typingDiv.remove();
+            
+            // Bot response
+            const botDiv = document.createElement('div');
+            botDiv.className = 'message bot-message';
+            botDiv.innerHTML = `
+                <div class="message-content">
+                    <i class="fas fa-robot"></i>
+                    <div class="message-text">${response}</div>
+                </div>
+            `;
+            messages.appendChild(botDiv);
+            messages.scrollTop = messages.scrollHeight;
+            
+        } catch (error) {
+            typingDiv.remove();
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'message bot-message';
+            errorDiv.innerHTML = `
+                <div class="message-content">
+                    <i class="fas fa-robot"></i>
+                    <div class="message-text">
+                        Maaf, terjadi kesalahan saat mencari informasi. Coba lagi ya! 😊
+                    </div>
+                </div>
+            `;
+            messages.appendChild(errorDiv);
+        }
+    }
+
+    // ============================================
+    // 🤖 CHATBOT MANUAL DATABASE (50 Q&A) - TANPA API!
+    // ============================================
+    const chatbotDatabase = [
+        {
+            keywords: ['apa itu sampah', 'pengertian sampah', 'sampah definisi'],
+            question: "Apa yang dimaksud dengan sampah?",
+            answer: `<b>🗑️ Sampah</b> adalah material sisa yang tidak diinginkan setelah berakhirnya suatu proses. Sampah bisa berasal dari aktivitas manusia, hewan, atau alam. Menurut UU No. 18 Tahun 2008, sampah adalah sisa kegiatan sehari-hari manusia dan/atau proses alam yang berbentuk padat.`
+        },
+        {
+            keywords: ['jenis sampah', 'macam sampah', 'tipe sampah'],
+            question: "Apa saja jenis-jenis sampah?",
+            answer: `<b>📋 Jenis-jenis sampah berdasarkan sumber:</b><br>
+            • <b>Sampah Rumah Tangga</b>: sisa makanan, plastik, kertas<br>
+            • <b>Sampah Industri</b>: limbah pabrik, bahan kimia<br>
+            • <b>Sampah Pertanian</b>: jerami, pestisida<br>
+            • <b>Sampah Konstruksi</b>: puing, semen, kayu<br>
+            • <b>Sampah Medis</b>: jarum, perban, obat<br><br>
+            <b>Berdasarkan sifat:</b><br>
+            • <b>Organik</b>: mudah terurai (daun, makanan)<br>
+            • <b>Anorganik</b>: sulit terurai (plastik, kaca)<br>
+            • <b>B3</b>: berbahaya & beracun (baterai, obat)`
+        },
+        {
+            keywords: ['perbedaan organik anorganik', 'organik vs anorganik'],
+            question: "Apa perbedaan sampah organik dan anorganik?",
+            answer: `<b>🔄 Perbedaan Utama:</b><br><br>
+            <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                <tr style="background:#DCFCE7;">
+                    <td style="padding:8px; border:1px solid #22C55E;"><b>Organik 🟢</b></td>
+                    <td style="padding:8px; border:1px solid #22C55E;"><b>Anorganik 🟡</b></td>
+                </tr>
+                <tr>
+                    <td style="padding:8px; border:1px solid #E5E7EB;">Mudah terurai alami</td>
+                    <td style="padding:8px; border:1px solid #E5E7EB;">Sulit terurai (ratusan tahun)</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px; border:1px solid #E5E7EB;">Contoh: daun, sisa makanan</td>
+                    <td style="padding:8px; border:1px solid #E5E7EB;">Contoh: plastik, kaleng, kaca</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px; border:1px solid #E5E7EB;">Bisa jadi kompos</td>
+                    <td style="padding:8px; border:1px solid #E5E7EB;">Bisa didaur ulang</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px; border:1px solid #E5E7EB;">Tong: HIJAU</td>
+                    <td style="padding:8px; border:1px solid #E5E7EB;">Tong: KUNING</td>
+                </tr>
+            </table>`
+        },
+        {
+            keywords: ['masalah lingkungan', 'sampah masalah', 'kenapa sampah masalah'],
+            question: "Mengapa sampah menjadi masalah lingkungan?",
+            answer: `<b>🌍 Sampah jadi masalah karena:</b><br><br>
+            1. <b>Volume meningkat</b>: Populasi naik → sampah bertambah<br>
+            2. <b>Lama terurai</b>: Plastik butuh 400+ tahun<br>
+            3. <b>Pencemaran</b>: Tanah, air, udara tercemar<br>
+            4. <b>Kesehatan</b>: Penyakit dari sampah menumpuk<br>
+            5. <b>Ekosistem rusak</b>: Hewan mati karena plastik<br>
+            6. <b>Perubahan iklim</b>: Gas metana dari sampah organik<br><br>
+            <i>Solusi: Kurangi, Pilah, Daur Ulang!</i>`
+        },
+        {
+            keywords: ['dampak kesehatan', 'sampah kesehatan', 'penyakit sampah'],
+            question: "Apa dampak sampah terhadap kesehatan manusia?",
+            answer: `<b>⚠️ Dampak Kesehatan:</b><br><br>
+            • <b>Penyakit Menular</b>: Diare, tifus, kolera dari lalat/tikus<br>
+            • <b>ISPA</b>: Asap pembakaran sampah<br>
+            • <b>Kulit</b>: Iritasi dari limbah B3<br>
+            • <b>Kanker</b>: Paparan bahan kimia berbahaya<br>
+            • <b>Keracunan</b>: Logam berat masuk rantai makanan<br>
+            • <b>Stres</b>: Lingkungan kotor pengaruhi mental<br><br>
+            <b>Pencegahan:</b><br>
+            ✓ Kelola sampah dengan benar<br>
+            ✓ Jangan bakar sampah sembarangan<br>
+            ✓ Cuci tangan setelah kontak sampah`
+        },
+        {
+            keywords: ['penyebab sampah meningkat', 'kenapa sampah banyak'],
+            question: "Apa penyebab utama meningkatnya jumlah sampah?",
+            answer: `<b>📈 Penyebab Utama:</b><br><br>
+            1. <b>Pertumbuhan Populasi</b>: Lebih banyak orang = lebih banyak sampah<br>
+            2. <b>Gaya Hidup Konsumtif</b>: Beli berlebihan, buang cepat<br>
+            3. <b>Kemasan Berlebih</b>: Plastik sekali pakai meningkat<br>
+            4. <b>Urbanisasi</b>: Kota padat → sampah menumpuk<br>
+            5. <b>Kurangnya Edukasi</b>: Tidak tahu cara kelola sampah<br>
+            6. <b>Infrastruktur Buruk</b>: TPA overload, daur ulang minim<br><br>
+            <i>Solusi: Hidup minimalis, bawa tas belanja, pilah sampah!</i>`
+        },
+        {
+            keywords: ['kurangi sampah rumah', 'cara mengurangi sampah'],
+            question: "Bagaimana cara mengurangi sampah di rumah?",
+            answer: `<b>🏠 Tips Kurangi Sampah di Rumah:</b><br><br>
+            ✅ <b>Reduce</b>: Beli secukupnya, hindari kemasan berlebih<br>
+            ✅ <b>Reuse</b>: Pakai ulang botol, tas, wadah<br>
+            ✅ <b>Recycle</b>: Pisahkan plastik/kertas untuk daur ulang<br>
+            ✅ <b>Kompos</b>: Olah sisa makanan jadi pupuk<br>
+            ✅ <b>Beli Lokal</b>: Kurangi kemasan & transportasi<br>
+            ✅ <b>Perbaiki</b>: Jangan langsung buang, coba perbaiki dulu<br>
+            ✅ <b>Donasi</b>: Barang layak pakai → berikan ke yang butuh<br><br>
+            <b>Mulai dari hal kecil, dampak besar! 🌱</b>`
+        },
+        {
+            keywords: ['3r', 'reduce reuse recycle', 'konsep 3r'],
+            question: "Apa itu konsep 3R?",
+            answer: `<b>♻️ Konsep 3R (Reduce-Reuse-Recycle):</b><br><br>
+            🔹 <b>REDUCE</b> (Kurangi)<br>
+            - Kurangi penggunaan barang sekali pakai<br>
+            - Beli sesuai kebutuhan<br>
+            - Pilih produk dengan kemasan minimal<br><br>
+            🔹 <b>REUSE</b> (Gunakan Ulang)<br>
+            - Pakai ulang botol, tas, kotak<br>
+            - Donasi barang bekas layak pakai<br>
+            - Kreatif: ubah sampah jadi kerajinan<br><br>
+            🔹 <b>RECYCLE</b> (Daur Ulang)<br>
+            - Pisahkan sampah anorganik<br>
+            - Serahkan ke bank sampah/TPST<br>
+            - Olah jadi produk baru<br><br>
+            <i>Urutan prioritas: Reduce > Reuse > Recycle</i>`
+        },
+        {
+            keywords: ['memilah sampah', 'pilah sampah', 'kenapa pilah'],
+            question: "Mengapa penting memilah sampah?",
+            answer: `<b>🎯 Pentingnya Memilah Sampah:</b><br><br>
+            1. <b>Mudah Dikelola</b>: Petugas lebih efisien<br>
+            2. <b>Daur Ulang Optimal</b>: Material bersih = nilai jual tinggi<br>
+            3. <b>Kurangi TPA</b>: Sampah organik jadi kompos, tidak menumpuk<br>
+            4. <b>Hemat Biaya</b>: Pengolahan lebih murah<br>
+            5. <b>Lindungi Petugas</b>: Hindari kontak dengan B3<br>
+            6. <b>Edukasi</b>: Biasakan hidup bertanggung jawab<br><br>
+            <b>Cara Mudah:</b><br>
+            🟢 Hijau: Organik (sisa makanan, daun)<br>
+            🟡 Kuning: Anorganik (plastik, kaleng, kertas)<br>
+            🔴 Merah: B3 (baterai, lampu, obat)`
+        },
+        {
+            keywords: ['dampak hewan', 'sampah hewan', 'hewan mati sampah'],
+            question: "Apa dampak sampah terhadap hewan?",
+            answer: `<b>🐾 Dampak Sampah pada Hewan:</b><br><br>
+            • <b>Terjerat</b>: Plastik mengikat burung, ikan, penyu<br>
+            • <b>Tertelan</b>: Hewan mengira plastik = makanan → mati<br>
+            • <b>Keracunan</b>: Bahan kimia masuk rantai makanan<br>
+            • <b>Hilang Habitat</b>: TPA & polusi rusak ekosistem<br>
+            • <b>Mikroplastik</b>: Partikel kecil masuk tubuh hewan laut<br><br>
+            <b>Fakta Mengejutkan:</b><br>
+            - 1 juta burung laut mati/tahun karena plastik<br>
+            - 100.000 mamalia laut mati karena sampah laut<br><br>
+            <i>Ayo kurangi plastik sekali pakai! 🐢</i>`
+        },
+        {
+            keywords: ['sampah mencemari tanah', 'pencemaran tanah'],
+            question: "Bagaimana sampah mencemari tanah?",
+            answer: `<b>🌱 Pencemaran Tanah oleh Sampah:</b><br><br>
+            <b>Mekanisme:</b><br>
+            1. <b>Lindi</b>: Cairan dari sampah meresap ke tanah<br>
+            2. <b>Logam Berat</b>: Timbal, merkuri dari baterai/E-waste<br>
+            3. <b>Mikroplastik</b>: Partikel plastik merusak struktur tanah<br>
+            4. <b>Bahan Kimia</b>: Pestisida, deterjen mengubah pH tanah<br><br>
+            <b>Dampak:</b><br>
+            ❌ Tanah tidak subur → tanaman gagal<br>
+            ❌ Air tanah tercemar → sumber air berbahaya<br>
+            ❌ Mikroorganisme tanah mati → ekosistem rusak<br><br>
+            <b>Pencegahan:</b><br>
+            ✓ Jangan buang sampah sembarangan<br>
+            ✓ Olah sampah B3 di tempat khusus<br>
+            ✓ Gunakan pupuk organik`
+        },
+        {
+            keywords: ['sampah plastik laut', 'laut sampah', 'polusi laut'],
+            question: "Apa dampak sampah plastik terhadap laut?",
+            answer: `<b>🌊 Dampak Plastik di Laut:</b><br><br>
+            <b>Ekosistem:</b><br>
+            • Terumbu karang tertutup plastik → mati<br>
+            • Plankton termakan mikroplastik → rantai makanan terganggu<br><br>
+            <b>Hewan Laut:</b><br>
+            • Penyu mengira kantong plastik = ubur-ubur → tertelan<br>
+            • Ikan, burung laut terjerat jaring plastik<br>
+            • Paus ditemukan dengan 40kg plastik di perut<br><br>
+            <b>Manusia:</b><br>
+            • Mikroplastik masuk ikan → kita makan ikan → masuk tubuh<br>
+            • Pariwisata rusak: pantai kotor → pendapatan turun<br><br>
+            <b>Fakta:</b> 8 juta ton plastik masuk laut tiap tahun!<br>
+            <i>Ayo kurangi plastik, selamatkan laut! 🐋</i>`
+        },
+        {
+            keywords: ['sulit terurai', 'berbahaya', 'plastik lama'],
+            question: "Mengapa sampah sulit terurai bisa berbahaya?",
+            answer: `<b>⚠️ Bahaya Sampah Sulit Terurai:</b><br><br>
+            <b>Alasan Berbahaya:</b><br>
+            1. <b>Akumulasi</b>: Menumpuk ratusan tahun di TPA<br>
+            2. <b>Mikroplastik</b>: Plastik pecah jadi partikel kecil → masuk air, tanah, tubuh<br>
+            3. <b>Bahan Kimia</b>: BPA, ftalat dari plastik → gangguan hormon<br>
+            4. <b>Kebakaran</b>: Tumpukan sampah mudah terbakar → asap beracun<br>
+            5. <b>Sarang Penyakit</b>: Tempat berkembang biak nyamuk, tikus<br><br>
+            <b>Waktu Terurai:</b><br>
+            • Plastik: 400-1000 tahun<br>
+            • Styrofoam: 500+ tahun<br>
+            • Kaca: 1 juta tahun (!)<br><br>
+            <i>Solusi: Pilih bahan ramah lingkungan!</i>`
+        },
+        {
+            keywords: ['pencemaran lingkungan', 'definisi pencemaran'],
+            question: "Apa yang dimaksud pencemaran lingkungan?",
+            answer: `<b>🌍 Pencemaran Lingkungan:</b><br><br>
+            <b>Definisi:</b><br>
+            Masuknya zat, energi, atau komponen lain ke lingkungan yang menyebabkan perubahan kualitas lingkungan hingga tidak dapat berfungsi sesuai peruntukannya.<br><br>
+            <b>Jenis Pencemaran:</b><br>
+            🔹 <b>Udara</b>: Asap kendaraan, industri, pembakaran<br>
+            🔹 <b>Air</b>: Limbah pabrik, sampah, deterjen<br>
+            🔹 <b>Tanah</b>: Sampah, pestisida, logam berat<br>
+            🔹 <b>Suara</b>: Kebisingan industri, transportasi<br><br>
+            <b>Dampak:</b><br>
+            • Kesehatan manusia terganggu<br>
+            • Ekosistem rusak<br>
+            • Perubahan iklim<br><br>
+            <i>Pencegahan: Kelola sampah, kurangi emisi, hidup hijau!</i>`
+        },
+        {
+            keywords: ['sampah banjir', 'banjir sampah', 'kenapa banjir'],
+            question: "Bagaimana sampah bisa menyebabkan banjir?",
+            answer: `<b>🌊 Sampah → Banjir:</b><br><br>
+            <b>Mekanisme:</b><br>
+            1. <b>Sumbatan Saluran</b>: Plastik, sampah menyumbat selokan, gorong-gorong<br>
+            2. <b>Sungai Tersumbat</b>: Sampah menumpuk → aliran air terhambat<br>
+            3. <b>Resapan Berkurang</b>: Sampah menutup tanah → air tidak meresap<br>
+            4. <b>TPA Overload</b>: TPA penuh → limpasan air hujan membawa sampah<br><br>
+            <b>Dampak:</b><br>
+            ❌ Genangan di permukiman<br>
+            ❌ Kerusakan infrastruktur<br>
+            ❌ Penyakit pasca-banjir (diare, leptospirosis)<br><br>
+            <b>Pencegahan:</b><br>
+            ✓ Jangan buang sampah ke sungai/selokan<br>
+            ✓ Bersihkan saluran air rutin<br>
+            ✓ Kurangi sampah plastik sekali pakai<br><br>
+            <i>"Sungai bersih, banjir berkurang!"</i>`
+        },
+        {
+            keywords: ['peran masyarakat', 'masyarakat kebersihan'],
+            question: "Apa peran masyarakat dalam menjaga kebersihan lingkungan?",
+            answer: `<b>👥 Peran Masyarakat:</b><br><br>
+            <b>Individu:</b><br>
+            • Buang sampah pada tempatnya<br>
+            • Pilah sampah dari rumah<br>
+            • Kurangi plastik sekali pakai<br>
+            • Ikut kerja bakti<br><br>
+            <b>Komunitas:</b><br>
+            • Bentuk bank sampah<br>
+            • Edukasi tetangga tentang 3R<br>
+            • Adakan program kompos bersama<br>
+            • Awasi pembuangan liar<br><br>
+            <b>Advokasi:</b><br>
+            • Dukung kebijakan ramah lingkungan<br>
+            • Laporkan pelanggaran<br>
+            • Pilih produk berkelanjutan<br><br>
+            <b>Kunci:</b> Perubahan dimulai dari diri sendiri! 🌱`
+        },
+        {
+            keywords: ['bakar sampah', 'membakar sampah', 'asap sampah'],
+            question: "Apa dampak membakar sampah sembarangan?",
+            answer: `<b>🔥 Bahaya Membakar Sampah:</b><br><br>
+            <b>Polusi Udara:</b><br>
+            • Asap mengandung <b>dioksin & furan</b> (karsinogenik)<br>
+            • Partikel halus (PM2.5) → gangguan pernapasan<br>
+            • Gas beracun: CO, SO₂, NOₓ<br><br>
+            <b>Kesehatan:</b><br>
+            ❌ ISPA, asma, bronkitis<br>
+            ❌ Iritasi mata & kulit<br>
+            ❌ Risiko kanker jangka panjang<br><br>
+            <b>Lingkungan:</b><br>
+            ❌ Abu beracun mencemari tanah & air<br>
+            ❌ Sisa plastik terbakar → mikroplastik terbang<br><br>
+            <b>Solusi Aman:</b><br>
+            ✓ Organik → kompos<br>
+            ✓ Anorganik → daur ulang<br>
+            ✓ B3 → serahkan ke pengelola khusus<br><br>
+            <i>Jangan bakar! Pilih cara ramah lingkungan.</i>`
+        },
+        {
+            keywords: ['perubahan iklim', 'sampah iklim', 'gas rumah kaca'],
+            question: "Bagaimana sampah mempengaruhi perubahan iklim?",
+            answer: `<b>🌡️ Sampah & Perubahan Iklim:</b><br><br>
+            <b>Mekanisme:</b><br>
+            1. <b>Gas Metana (CH₄)</b>: Sampah organik di TPA → dekomposisi anaerob → metana (25x lebih kuat dari CO₂)<br>
+            2. <b>CO₂ dari Pembakaran</b>: Bakar sampah → emisi karbon<br>
+            3. <b>Produksi Plastik</b>: Dari minyak bumi → emisi tinggi<br>
+            4. <b>Transportasi</b>: Pengangkutan sampah → bahan bakar fosil<br><br>
+            <b>Data:</b><br>
+            • Sektor sampah = 3-5% emisi global<br>
+            • Metana dari TPA = 11% emisi metana dunia<br><br>
+            <b>Solusi:</b><br>
+            ✓ Kurangi sampah organik ke TPA → kompos<br>
+            ✓ Tangkap gas metana TPA → jadi energi<br>
+            ✓ Daur ulang → kurangi produksi baru<br><br>
+            <i>Kelola sampah = kurangi pemanasan global!</i>`
+        },
+        {
+            keywords: ['limbah berbahaya', 'b3', 'bahan berbahaya'],
+            question: "Apa itu limbah berbahaya?",
+            answer: `<b>⚠️ Limbah B3 (Bahan Berbahaya & Beracun):</b><br><br>
+            <b>Definisi:</b><br>
+            Limbah yang karena sifat, konsentrasi, atau jumlahnya dapat mencemarkan/membahayakan lingkungan & kesehatan.<br><br>
+            <b>Karakteristik B3:</b><br>
+            🔴 Mudah meledak<br>
+            🔴 Mudah terbakar<br>
+            🔴 Beracun (toksik)<br>
+            🔴 Korosif (merusak)<br>
+            🔴 Menular (infeksius)<br>
+            🔴 Reaktif (bereaksi keras)<br><br>
+            <b>Contoh:</b><br>
+            • Baterai, aki → logam berat<br>
+            • Lampu neon → merkuri<br>
+            • Obat kadaluarsa → bahan kimia<br>
+            • Pestisida, cat, oli bekas<br><br>
+            <b>Pembuangan:</b><br>
+            ❌ JANGAN campur sampah biasa!<br>
+            ✅ Masukkan tong MERAH<br>
+            ✅ Serahkan ke pengelola B3 resmi<br><br>
+            <i>Salah buang = bahaya bagi semua!</i>`
+        },
+        {
+            keywords: ['sampah elektronik', 'e-waste', 'elektronik bekas'],
+            question: "Mengapa sampah elektronik perlu penanganan khusus?",
+            answer: `<b>📱 E-Waste (Sampah Elektronik):</b><br><br>
+            <b>Kenapa Khusus?</b><br>
+            1. <b>Kandungan Beracun</b>:<br>
+            • Timbal (otak, saraf)<br>
+            • Merkuri (ginjal, otak)<br>
+            • Kadmium (paru-paru, ginjal)<br>
+            • Brominated flame retardants (hormon)<br><br>
+            2. <b>Nilai Ekonomi</b>:<br>
+            • Emas, perak, tembaga → bisa dipulihkan<br>
+            • Daur ulang = hemat sumber daya<br><br>
+            3. <b>Data Pribadi</b>:<br>
+            • HP/laptop bekas → risiko kebocoran data<br><br>
+            <b>Cara Buang Aman:</b><br>
+            ✓ Hapus data pribadi dulu<br>
+            ✓ Serahkan ke dropbox e-waste<br>
+            ✓ Ikut program take-back produsen<br>
+            ✓ Jangan buang ke TPA biasa!<br><br>
+            <i>E-waste = racun + emas, kelola dengan bijak!</i>`
+        },
+        {
+            keywords: ['daur ulang', 'recycle', 'pengertian daur ulang'],
+            question: "Apa itu daur ulang?",
+            answer: `<b>♻️ Daur Ulang (Recycling):</b><br><br>
+            <b>Definisi:</b><br>
+            Proses mengolah kembali material bekas menjadi produk baru yang bermanfaat.<br><br>
+            <b>Manfaat:</b><br>
+            ✅ Hemat sumber daya alam<br>
+            ✅ Kurangi energi produksi (daur ulang aluminium hemat 95% energi!)<br>
+            ✅ Kurangi sampah ke TPA<br>
+            ✅ Ciptakan lapangan kerja<br>
+            ✅ Kurangi emisi gas rumah kaca<br><br>
+            <b>Proses Umum:</b><br>
+            1. Pengumpulan & pemilahan<br>
+            2. Pembersihan & pencacahan<br>
+            3. Peleburan/pengolahan<br>
+            4. Pencetakan produk baru<br><br>
+            <b>Contoh:</b><br>
+            • Botol plastik → kaos, tas, ember<br>
+            • Kertas → kertas daur ulang, kardus<br>
+            • Kaleng → kaleng baru, komponen mobil<br><br>
+            <i>Setiap kali kamu daur ulang, kamu selamatkan bumi! 🌍</i>`
+        },
+        {
+            keywords: ['daur ulang plastik', 'cara daur plastik'],
+            question: "Bagaimana cara mendaur ulang sampah plastik?",
+            answer: `<b>🔄 Daur Ulang Plastik - Langkah demi Langkah:</b><br><br>
+            <b>Di Rumah:</b><br>
+            1. <b>Pilah</b>: Pisahkan plastik bersih dari kotor<br>
+            2. <b>Cuci</b>: Bilas sisa makanan/minuman<br>
+            3. <b>Keringkan</b>: Agar tidak berjamur<br>
+            4. <b>Pipihkan</b>: Hemat tempat penyimpanan<br>
+            5. <b>Serahkan</b>: Ke bank sampah/TPST/pemulung<br><br>
+            <b>Proses Industri:</b><br>
+            1. Sortir berdasarkan jenis (PET, HDPE, PVC, dll)<br>
+            2. Cuci & cacah jadi serpihan (flakes)<br>
+            3. Lelehkan & bentuk jadi pellet<br>
+            4. Cetak jadi produk baru: botol, tas, furniture<br><br>
+            <b>Tips:</b><br>
+            ✓ Kenali kode daur ulang (♳♴♵♶♷♸♹)<br>
+            ✓ Hindari plastik multilayer (sulit didaur)<br>
+            ✓ Pilih plastik #1 (PET) & #2 (HDPE) → paling mudah didaur<br><br>
+            <i>Plastikmu hari ini = produk baru besok!</i>`
+        },
+        {
+            keywords: ['bank sampah', 'apa itu bank sampah'],
+            question: "Apa itu bank sampah?",
+            answer: `<b>🏦 Bank Sampah:</b><br><br>
+            <b>Definisi:</b><br>
+            Sistem pengelolaan sampah dengan cara menabung sampah anorganik yang memiliki nilai ekonomis.<br><br>
+            <b>Cara Kerja:</b><br>
+            1. Nasabah (warga) menyetor sampah terpilah<br>
+            2. Petugas menimbang & mencatat di "buku tabungan"<br>
+            3. Sampah dihargai sesuai jenis & berat<br>
+            4. Nilai tabungan bisa ditarik tunai/ditukar barang<br>
+            5. Bank sampah menjual ke pengepul/industri daur ulang<br><br>
+            <b>Manfaat:</b><br>
+            ✅ Warga dapat penghasilan tambahan<br>
+            ✅ Lingkungan lebih bersih<br>
+            ✅ Industri dapat bahan baku daur ulang<br>
+            ✅ Edukasi pengelolaan sampah<br><br>
+            <b>Jenis Tabungan:</b><br>
+            • Plastik botol, gelas, kemasan<br>
+            • Kertas, kardus, koran<br>
+            • Kaleng aluminium, besi<br>
+            • Minyak jelantah (untuk biodiesel)<br><br>
+            <i>Cari bank sampah terdekat & mulai menabung! 💰♻️</i>`
+        },
+        {
+            keywords: ['pengelolaan sampah kota', 'sistem sampah kota'],
+            question: "Bagaimana sistem pengelolaan sampah di kota?",
+            answer: `<b>🏙️ Sistem Pengelolaan Sampah Perkotaan:</b><br><br>
+            <b>Alur Umum:</b><br>
+            1. <b>Sumber</b>: Rumah tangga, pasar, perkantoran<br>
+            2. <b>Pengumpulan</b>: Gerobak, truk, kontainer<br>
+            3. <b>Pengangkutan</b>: Ke TPS (Tempat Penampungan Sementara)<br>
+            4. <b>Pemrosesan</b>:<br>
+            • Organik → kompos/biogas<br>
+            • Anorganik → daur ulang<br>
+            • Residu → TPA<br>
+            5. <b>Pembuangan Akhir</b>: TPA dengan sistem sanitary landfill<br><br>
+            <b>Tantangan:</b><br>
+            ❌ Volume sampah > kapasitas TPA<br>
+            ❌ Partisipasi masyarakat rendah<br>
+            ❌ Anggaran terbatas<br>
+            ❌ Teknologi daur ulang minim<br><br>
+            <b>Solusi Modern:</b><br>
+            ✓ Waste-to-Energy (sampah jadi listrik)<br>
+            ✓ Smart bin dengan sensor<br>
+            ✓ Aplikasi jemput sampah<br>
+            ✓ Edukasi & insentif warga<br><br>
+            <i>Kota bersih butuh kolaborasi semua pihak!</i>`
+        },
+        {
+            keywords: ['peran pemerintah', 'pemerintah sampah'],
+            question: "Apa peran pemerintah dalam mengelola sampah?",
+            answer: `<b>🏛️ Peran Pemerintah:</b><br><br>
+            <b>Regulasi:</b><br>
+            • Buat UU & Perda pengelolaan sampah<br>
+            • Tetapkan standar teknis (TPA, daur ulang)<br>
+            • Atur larangan plastik sekali pakai<br><br>
+            <b>Infrastruktur:</b><br>
+            • Bangun TPS, TPST, TPA yang memadai<br>
+            • Sediakan armada pengangkutan<br>
+            • Kembangkan fasilitas daur ulang<br><br>
+            <b>Edukasi:</b><br>
+            • Kampanye pilah sampah<br>
+            • Program sekolah adiwiyata<br>
+            • Sosialisasi 3R ke masyarakat<br><br>
+            <b>Ekonomi:</b><br>
+            • Insentif untuk industri daur ulang<br>
+            • Denda untuk pembuangan liar<br>
+            • Subsidi kompos/biogas komunitas<br><br>
+            <b>Pengawasan:</b><br>
+            • Monitoring TPA & emisi<br>
+            • Penegakan hukum pelanggar<br>
+            • Evaluasi kebijakan berkala<br><br>
+            <i>Pemerintah + Masyarakat = Solusi Berkelanjutan!</i>`
+        },
+        {
+            keywords: ['kompos', 'apa itu kompos'],
+            question: "Apa itu kompos?",
+            answer: `<b>🌿 Kompos:</b><br><br>
+            <b>Definisi:</b><br>
+            Hasil penguraian parsial/tidak lengkap dari campuran bahan-bahan organik yang dipercepat secara artifisial oleh populasi berbagai macam mikroorganisme dalam kondisi lingkungan yang hangat, lembap, dan aerobik/anaerobik.<br><br>
+            <b>Manfaat:</b><br>
+            ✅ Memperbaiki struktur tanah<br>
+            ✅ Meningkatkan kesuburan<br>
+            ✅ Menahan air lebih lama<br>
+            ✅ Mengurangi kebutuhan pupuk kimia<br>
+            ✅ Menyerap karbon dari atmosfer<br><br>
+            <b>Bahan Bisa Dikompos:</b><br>
+            🟢 Sisa sayur & buah<br>
+            🟢 Daun, rumput, ranting kecil<br>
+            🟢 Ampas kopi/teh<br>
+            🟢 Kertas/kardus non-berminyak<br><br>
+            <b>Hindari:</b><br>
+            ❌ Daging, ikan, susu (bau, tarik hama)<br>
+            ❌ Plastik, logam, kaca<br>
+            ❌ Kotoran hewan karnivora<br><br>
+            <i>Kompos = Emas Hitam untuk tanahmu! 🌱</i>`
+        },
+        {
+            keywords: ['cara buat kompos', 'kompos sederhana'],
+            question: "Bagaimana cara membuat kompos sederhana?",
+            answer: `<b>🪴 Kompos Sederhana - 3 Metode:</b><br><br>
+            <b>1. Kompos Lubang:</b><br>
+            1. Gali lubang 50x50x50 cm<br>
+            2. Masukkan sampah organik lapis demi lapis<br>
+            3. Selingi dengan tanah<br>
+            4. Tutup, biarkan 2-3 bulan<br>
+            5. Aduk tiap 2 minggu<br><br>
+            <b>2. Kompos Takakura (Ember):</b><br>
+            1. Siapkan ember berlubang + keranjang<br>
+            2. Alasi dengan kardus/koran<br>
+            3. Masukkan sampah organik harian<br>
+            4. Tutup rapat, simpan di tempat teduh<br>
+            5. Panen dalam 1-2 bulan<br><br>
+            <b>3. Kompos Cair:</b><br>
+            1. Campur sampah organik + air + gula merah<br>
+            2. Fermentasi 2-4 minggu<br>
+            3. Saring, encerkan 1:10<br>
+            4. Semprot ke tanaman<br><br>
+            <b>Tips Sukses:</b><br>
+            ✓ Cincang bahan agar cepat terurai<br>
+            ✓ Jaga kelembapan (seperti spons)<br>
+            ✓ Aduk untuk sirkulasi udara<br>
+            ✓ Hindari bahan berminyak/berdaging<br><br>
+            <i>Kompos jadi dalam 1-3 bulan. Siap pakai! 🌻</i>`
+        },
+        {
+            keywords: ['manfaat daur ulang', 'keuntungan recycle'],
+            question: "Apa manfaat daur ulang?",
+            answer: `<b>✨ Manfaat Daur Ulang:</b><br><br>
+            <b>Lingkungan:</b><br>
+            🌍 Kurangi sampah ke TPA<br>
+            🌍 Hemat sumber daya alam (kayu, minyak, bijih)<br>
+            🌍 Kurangi emisi gas rumah kaca<br>
+            🌍 Jaga ekosistem & keanekaragaman hayati<br><br>
+            <b>Ekonomi:</b><br>
+            💰 Ciptakan lapangan kerja (pemulung, pengolah)<br>
+            💰 Hemat biaya produksi (bahan daur ulang lebih murah)<br>
+            💰 Nilai ekonomi sampah terpilah<br>
+            💰 Kurangi impor bahan baku<br><br>
+            <b>Energi:</b><br>
+            ⚡ Daur ulang aluminium hemat 95% energi vs produksi baru<br>
+            ⚡ Kertas daur ulang hemat 40-70% energi<br>
+            ⚡ Plastik daur ulang hemat 70-90% energi<br><br>
+            <b>Sosial:</b><br>
+            👥 Edukasi masyarakat tentang keberlanjutan<br>
+            👥 Tingkatkan kesadaran lingkungan<br>
+            👥 Bangun ekonomi sirkular<br><br>
+            <i>Setiap botol yang kamu daur ulang = langkah kecil untuk bumi yang lebih baik!</i>`
+        },
+        {
+            keywords: ['contoh daur ulang', 'barang bisa didaur'],
+            question: "Apa saja contoh barang yang bisa didaur ulang?",
+            answer: `<b>♻️ Barang Bisa Daur Ulang:</b><br><br>
+            <b>🟡 Plastik:</b><br>
+            • Botol minuman (PET #1)<br>
+            • Wadah sampo, deterjen (HDPE #2)<br>
+            • Pipa, mainan (PVC #3)<br>
+            • Kantong plastik (LDPE #4)<br>
+            • Tutup botol (PP #5)<br><br>
+            <b>📄 Kertas:</b><br>
+            • Koran, majalah, buku<br>
+            • Kardus, dus, kertas HVS<br>
+            • Karton, amplop<br>
+            • Kertas kemasan (tanpa lapisan plastik)<br><br>
+            <b>🥫 Logam:</b><br>
+            • Kaleng minuman (aluminium)<br>
+            • Kaleng makanan (baja)<br>
+            • Tutup botol logam<br>
+            • Kawat, besi bekas<br><br>
+            <b>🪞 Kaca:</b><br>
+            • Botol kaca<br>
+            • Toples, wadah kaca<br>
+            • Pecahan kaca (pisahkan warna)<br><br>
+            <b>⚠️ Yang TIDAK Bisa:</b><br>
+            ❌ Plastik multilayer (snack, kopi)<br>
+            ❌ Kertas berminyak/kotor<br>
+            ❌ Kaca pyrex/cermin<br>
+            ❌ Styrofoam (sulit didaur)<br><br>
+            <i>Pilah dengan benar = daur ulang optimal!</i>`
+        },
+        {
+            keywords: ['tpa', 'tempat pembuangan akhir'],
+            question: "Apa itu tempat pembuangan akhir (TPA)?",
+            answer: `<b>🗑️ TPA (Tempat Pembuangan Akhir):</b><br><br>
+            <b>Definisi:</b><br>
+            Tempat terakhir untuk menimbun sampah setelah melalui proses pengolahan, dengan sistem yang ramah lingkungan.<br><br>
+            <b>Jenis TPA:</b><br>
+            🔹 <b>Open Dumping</b> (Tradisional):<br>
+            - Sampah ditumpuk terbuka<br>
+            - Murah tapi berpolusi, tidak direkomendasikan<br><br>
+            🔹 <b>Sanitary Landfill</b> (Modern):<br>
+            - Lapisan dasar anti-bocor (geomembrane)<br>
+            - Sistem pengumpulan lindi (cairan sampah)<br>
+            - Penangkapan gas metana<br>
+            - Penutupan harian dengan tanah<br><br>
+            <b>Proses di TPA Modern:</b><br>
+            1. Sampah masuk → ditimbang & dicatat<br>
+            2. Dipilah: organik, anorganik, B3<br>
+            3. Organik → kompos/biogas<br>
+            4. Anorganik → daur ulang<br>
+            5. Residu → ditimbun di sel landfill<br>
+            6. Lindi diolah → air aman<br>
+            7. Gas metana → jadi listrik<br><br>
+            <b>Tantangan:</b><br>
+            ❌ Kapasitas terbatas<br>
+            ❌ Biaya operasional tinggi<br>
+            ❌ Dampak lingkungan jika tidak dikelola baik<br><br>
+            <i>Solusi terbaik: Kurangi sampah sebelum ke TPA!</i>`
+        },
+        {
+            keywords: ['kurangi plastik', 'hindari plastik'],
+            question: "Bagaimana cara mengurangi penggunaan plastik?",
+            answer: `<b>🚫 Tips Kurangi Plastik:</b><br><br>
+            <b>Belanja:</b><br>
+            ✅ Bawa tas belanja sendiri (kain, kanvas)<br>
+            ✅ Pilih produk tanpa kemasan plastik<br>
+            ✅ Beli dalam jumlah besar (bulk) → kurangi kemasan<br>
+            ✅ Gunakan wadah sendiri untuk takeaway<br><br>
+            <b>Sehari-hari:</b><br>
+            ✅ Pakai botol minum ulang (stainless/glass)<br>
+            ✅ Gunakan sedotan stainless/kayu/kertas<br>
+            ✅ Pilih sikat gigi bambu<br>
+            ✅ Sabun batangan > sabun cair dalam plastik<br><br>
+            <b>Makanan:</b><br>
+            ✅ Masak sendiri > beli kemasan<br>
+            ✅ Simpan makanan di wadah kaca/stainless<br>
+            ✅ Hindari makanan dengan plastik multilayer<br><br>
+            <b>Advokasi:</b><br>
+            ✅ Dukung kebijakan larangan plastik sekali pakai<br>
+            ✅ Edukasi keluarga & teman<br>
+            ✅ Pilih brand yang ramah lingkungan<br><br>
+            <b>Mulai Kecil:</b><br>
+            🎯 Minggu 1: Bawa tas belanja<br>
+            🎯 Minggu 2: Pakai botol minum<br>
+            🎯 Minggu 3: Tolak sedotan plastik<br><br>
+            <i>Perubahan kecil = dampak besar untuk bumi! 🌍</i>`
+        },
+        {
+            keywords: ['gaya hidup ramah lingkungan', 'eco lifestyle'],
+            question: "Apa itu gaya hidup ramah lingkungan?",
+            answer: `<b>🌱 Gaya Hidup Ramah Lingkungan:</b><br><br>
+            <b>Definisi:</b><br>
+            Pola hidup yang meminimalkan dampak negatif terhadap lingkungan melalui pilihan konsumsi, transportasi, dan kebiasaan sehari-hari.<br><br>
+            <b>Prinsip Utama:</b><br>
+            🔹 <b>Reduce</b>: Kurangi konsumsi berlebihan<br>
+            🔹 <b>Reuse</b>: Gunakan ulang sebelum buang<br>
+            🔹 <b>Recycle</b>: Daur ulang material bekas<br>
+            🔹 <b>Refuse</b>: Tolak yang tidak perlu (plastik, struk)<br>
+            🔹 <b>Rot</b>: Kompos sampah organik<br><br>
+            <b>Contoh Penerapan:</b><br>
+            🚲 Transportasi: Jalan, sepeda, transportasi umum<br>
+            🛍️ Belanja: Produk lokal, kemasan minimal, secondhand<br>
+            🍽️ Makanan: Plant-based, kurangi food waste, kompos<br>
+            🏠 Rumah: Hemat listrik/air, produk alami, taman<br>
+            💡 Energi: Lampu LED, panel surya, matikan standby<br><br>
+            <b>Manfaat:</b><br>
+            ✅ Jejak karbon lebih kecil<br>
+            ✅ Hemat uang jangka panjang<br>
+            ✅ Kesehatan lebih baik<br>
+            ✅ Kontribusi untuk generasi mendatang<br><br>
+            <i>"Bumi tidak butuh segelintir orang yang sempurna, tapi jutaan orang yang mencoba." 🌍</i>`
+        },
+        {
+            keywords: ['tas belanja sendiri', 'kenapa bawa tas'],
+            question: "Mengapa kita harus membawa tas belanja sendiri?",
+            answer: `<b>🛍️ Alasan Bawa Tas Belanja Sendiri:</b><br><br>
+            <b>Lingkungan:</b><br>
+            🌍 1 tas plastik = 450+ tahun terurai<br>
+            🌍 Produksi plastik = emisi CO₂ tinggi<br>
+            🌍 Plastik sekali pakai = sampah laut, tanah, udara<br><br>
+            <b>Ekonomi:</b><br>
+            💰 Hemat biaya (beberapa toko kasih diskon bawa tas)<br>
+            💰 Tas kain bisa dipakai 1000+ kali = investasi murah<br>
+            💰 Dukung ekonomi lokal (tas buatan pengrajin)<br><br>
+            <b>Kesehatan:</b><br>
+            🩺 Kurangi paparan BPA dari plastik<br>
+            🩺 Tas kain lebih higienis (bisa dicuci)<br><br>
+            <b>Sosial:</b><br>
+            👥 Jadi teladan bagi orang lain<br>
+            👥 Dorong kebijakan anti-plastik<br>
+            👥 Bangun budaya sadar lingkungan<br><br>
+            <b>Tips Memilih Tas:</b><br>
+            ✓ Pilih bahan tahan lama: kanvas, katun, jute<br>
+            ✓ Ukuran sesuai kebutuhan: kecil untuk belanja harian<br>
+            ✓ Lipat kecil: simpan di tas/dompet<br>
+            ✓ Cuci rutin agar higienis<br><br>
+            <b>Fakta:</b><br>
+            • Dunia pakai 5 triliun kantong plastik/tahun<br>
+            • 1 menit = 1 juta kantong plastik digunakan<br><br>
+            <i>Bawa tas sendiri = 1 aksi kecil, 1 dampak besar! ♻️</i>`
+        },
+        {
+            keywords: ['botol minum ulang', 'manfaat tumbler'],
+            question: "Apa manfaat menggunakan botol minum ulang?",
+            answer: `<b>💧 Manfaat Botol Minum Ulang:</b><br><br>
+            <b>Lingkungan:</b><br>
+            🌊 Kurangi 150+ botol plastik/tahun per orang<br>
+            🌊 Hemat minyak bumi (bahan baku plastik)<br>
+            🌊 Kurangi sampah laut & TPA<br><br>
+            <b>Kesehatan:</b><br>
+            🩺 Hindari BPA & mikroplastik dari botol sekali pakai<br>
+            🩺 Stainless steel/glass = lebih aman untuk air panas<br>
+            🩺 Dorong minum air lebih banyak (karena praktis)<br><br>
+            <b>Ekonomi:</b><br>
+            💰 Hemat Rp 5.000-15.000/hari (beli air kemasan)<br>
+            💰 Dalam 1 bulan = hemat Rp 150.000-450.000!<br>
+            💰 Investasi botol = 1x beli, pakai bertahun-tahun<br><br>
+            <b>Praktis:</b><br>
+            ✅ Desain keren, personalisasi<br>
+            ✅ Isolasi termal: dingin 24 jam, panas 12 jam<br>
+            ✅ Anti tumpah, mudah dibawa<br><br>
+            <b>Tips Memilih:</b><br>
+            ✓ Material: stainless steel 304, glass, BPA-free<br>
+            ✓ Kapasitas: 500-750ml untuk sehari-hari<br>
+            ✓ Mulut lebar: mudah isi & cuci<br>
+            ✓ Ada tali/pegangan: praktis dibawa<br><br>
+            <b>Cara Pakai:</b><br>
+            1. Isi air dari rumah/kran bersih<br>
+            2. Cuci rutin dengan sabun + sikat<br>
+            3. Keringkan sebelum simpan<br>
+            4. Ganti seal/gasket jika sudah aus<br><br>
+            <i>Botol minummu = senjata melawan polusi plastik! 💪</i>`
+        },
+        {
+            keywords: ['edukasi masyarakat sampah', 'sosialisasi sampah'],
+            question: "Bagaimana cara mengedukasi masyarakat tentang sampah?",
+            answer: `<b>📚 Strategi Edukasi Sampah:</b><br><br>
+            <b>Media Sosial:</b><br>
+            📱 Buat konten menarik: infografis, video pendek, challenge<br>
+            📱 Gunakan hashtag: #PilahSampah #ZeroWasteID<br>
+            📱 Kolaborasi dengan influencer lokal<br><br>
+            <b>Komunitas:</b><br>
+            👥 Workshop pilah sampah & kompos<br>
+            👥 Demo daur ulang kreatif (ecobrick, kerajinan)<br>
+            👥 Program "Sabtu Bersih" rutin<br><br>
+            <b>Sekolah:</b><br>
+            🎓 Integrasi ke kurikulum (IPA, PKn)<br>
+            🎓 Program Adiwiyata<br>
+            🎓 Lomba kreasi daur ulang<br>
+            🎓 Bank sampah sekolah<br><br>
+            <b>Publik:</b><br>
+            📢 Poster & banner di tempat umum<br>
+            📢 Announcements di masjid/gereja<br>
+            📢 Kolaborasi dengan puskesmas (kesehatan & sampah)<br><br>
+            <b>Teknologi:</b><br>
+            📲 Aplikasi panduan pilah sampah<br>
+            📲 Game edukasi lingkungan<br>
+            📲 QR code di tempat sampah (info kategori)<br><br>
+            <b>Kunci Sukses:</b><br>
+            ✓ Pesan sederhana & visual<br>
+            ✓ Libatkan tokoh masyarakat<br>
+            ✓ Berikan contoh nyata (bukan teori)<br>
+            ✓ Apresiasi partisipasi (reward system)<br>
+            ✓ Evaluasi & adaptasi strategi<br><br>
+            <i>Edukasi = investasi jangka panjang untuk bumi!</i>`
+        },
+        {
+            keywords: ['peran sekolah', 'sekolah sampah'],
+            question: "Apa peran sekolah dalam mengurangi sampah?",
+            answer: `<b>🏫 Peran Sekolah:</b><br><br>
+            <b>Edukasi:</b><br>
+            📚 Integrasi pengelolaan sampah ke kurikulum<br>
+            📚 Praktik langsung: kompos, daur ulang, bank sampah<br>
+            📚 Kunjungan ke TPA/TPST untuk belajar<br><br>
+            <b>Infrastruktur:</b><br>
+            🗑️ Sediakan tempat sampah terpilah (Merah-Kuning-Hijau)<br>
+            🗑️ Area kompos sekolah<br>
+            🗑️ Drop box e-waste & B3<br><br>
+            <b>Kebijakan:</b><br>
+            📋 Larangan plastik sekali pakai di kantin<br>
+            📋 Program "Bawa Bekal & Botol Sendiri"<br>
+            📋 Insentif kelas terbersih<br><br>
+            <b>Kolaborasi:</b><br>
+            🤝 Ajak orang tua: workshop keluarga ramah lingkungan<br>
+            🤝 Partner dengan bank sampah lokal<br>
+            🤝 Ikut program Adiwiyata (penghargaan sekolah hijau)<br><br>
+            <b>Kegiatan Kreatif:</b><br>
+            🎨 Lomba kreasi daur ulang<br>
+            🌱 Penanaman pohon & taman sekolah<br>
+            ♻️ Market day produk daur ulang siswa<br><br>
+            <b>Monitoring:</b><br>
+            📊 Catat pengurangan sampah bulanan<br>
+            📊 Libatkan OSIS dalam pengawasan<br>
+            📊 Publikasikan pencapaian ke komunitas<br><br>
+            <i>Sekolah = laboratorium perubahan! Siswa hari ini = pemimpin lingkungan masa depan. 🌍</i>`
+        },
+        {
+            keywords: ['jaga kebersihan lingkungan', 'bersih lingkungan'],
+            question: "Bagaimana cara menjaga kebersihan lingkungan sekitar?",
+            answer: `<b>🧹 Tips Jaga Kebersihan Lingkungan:</b><br><br>
+            <b>Individu:</b><br>
+            ✅ Buang sampah pada tempatnya (sesuai kategori)<br>
+            ✅ Bawa asbak mini untuk perokok<br>
+            ✅ Bersihkan depan rumah/ruko sendiri<br>
+            ✅ Laporkan pembuangan liar ke pihak berwenang<br><br>
+            <b>Komunitas:</b><br>
+            ✅ Adakan kerja bakti rutin (mingguan/bulanan)<br>
+            ✅ Pasang tempat sampah di titik strategis<br>
+            ✅ Buat jadwal piket kebersihan lingkungan<br>
+            ✅ Tanam pohon & tanaman hias (perbaiki estetika)<br><br>
+            <b>Preventif:</b><br>
+            ✅ Kurangi sampah dari sumber (3R)<br>
+            ✅ Hindari buang sampah ke sungai/selokan<br>
+            ✅ Gunakan produk ramah lingkungan<br>
+            ✅ Edukasi tetangga, terutama anak-anak<br><br>
+            <b>Teknologi:</b><br>
+            ✅ Aplikasi lapor sampah menumpuk<br>
+            ✅ Grup WhatsApp warga untuk koordinasi<br>
+            ✅ CCTV di titik rawan pembuangan liar<br><br>
+            <b>Motivasi:</b><br>
+            🏆 Lomba RT/RW terbersih<br>
+            🏆 Papan penghargaan "Warga Peduli Lingkungan"<br>
+            🏆 Reward kecil untuk partisipasi aktif<br><br>
+            <b>Manfaat:</b><br>
+            🌿 Lingkungan sehat → warga sehat<br>
+            🌿 Nilai properti naik<br>
+            🌿 Kebanggaan komunitas<br>
+            🌿 Contoh baik untuk generasi berikutnya<br><br>
+            <i>"Kebersihan adalah sebagian dari iman" - Mulai dari diri, mulai dari sekarang! ✨</i>`
+        },
+        {
+            keywords: ['zero waste', 'nol sampah'],
+            question: "Apa itu zero waste?",
+            answer: `<b>♻️ Zero Waste:</b><br><br>
+            <b>Definisi:</b><br>
+            Filsafat & gaya hidup yang bertujuan mengurangi sampah hingga seminimal mungkin, dengan prinsip: tidak ada yang terbuang ke TPA, insinerator, atau lingkungan.<br><br>
+            <b>5R Zero Waste:</b><br>
+            🔹 <b>Refuse</b> (Tolak): Tolak yang tidak perlu (sedotan, kantong plastik, brosur)<br>
+            🔹 <b>Reduce</b> (Kurangi): Beli secukupnya, hindari impulsif<br>
+            🔹 <b>Reuse</b> (Gunakan Ulang): Pakai ulang, perbaiki, donasi<br>
+            🔹 <b>Recycle</b> (Daur Ulang): Pilihan terakhir setelah 3R di atas<br>
+            🔹 <b>Rot</b> (Kompos): Olah organik jadi tanah subur<br><br>
+            <b>Prinsip Dasar:</b><br>
+            • Sistem sirkular: sampah = sumber daya<br>
+            • Tanggung jawab produsen: desain produk ramah lingkungan<br>
+            • Konsumsi sadar: pilih kualitas > kuantitas<br><br>
+            <b>Mitos vs Fakta:</b><br>
+            ❌ "Zero waste = tidak menghasilkan sampah sama sekali"<br>
+            ✅ "Zero waste = mengurangi hingga minimal, sisa dikelola bertanggung jawab"<br><br>
+            <b>Langkah Awal:</b><br>
+            1. Audit sampah: catat apa yang paling sering dibuang<br>
+            2. Pilih 1 area untuk diperbaiki (misal: dapur)<br>
+            3. Ganti 1 kebiasaan (misal: bawa tas belanja)<br>
+            4. Rayakan progres, jangan perfeksionis<br><br>
+            <i>"Zero waste is a journey, not a destination." - Progress > perfection! 🌱</i>`
+        },
+        {
+            keywords: ['terapkan zero waste', 'zero waste rumah'],
+            question: "Bagaimana cara menerapkan zero waste di rumah?",
+            answer: `<b>🏠 Zero Waste di Rumah - Panduan Praktis:</b><br><br>
+            <b>Dapur:</b><br>
+            ✅ Beli bahan curah (beras, kacang) dengan wadah sendiri<br>
+            ✅ Simpan makanan di wadah kaca/stainless<br>
+            ✅ Kompos sisa makanan<br>
+            ✅ Gunakan lap kain > tisu<br>
+            ✅ Sabun cuci piring batangan > cair dalam plastik<br><br>
+            <b>Kamar Mandi:</b><br>
+            ✅ Sabun, sampo, conditioner batangan<br>
+            ✅ Sikat gigi bambu<br>
+            ✅ Cotton bud dengan tangkai kertas<br>
+            ✅ Menstrual cup/pembalut kain<br>
+            ✅ Razor stainless (ganti mata saja)<br><br>
+            <b>Ruang Tamu/Tidur:</b><br>
+            ✅ Dekorasi dari bahan alami/daur ulang<br>
+            ✅ Perbaiki furniture > beli baru<br>
+            ✅ Donasi barang layak pakai<br>
+            ✅ Pilih produk secondhand<br><br>
+            <b>Belanja:</b><br>
+            ✅ Bawa: tas, wadah, botol, sedotan<br>
+            ✅ Pilih produk dengan kemasan minimal/kembali<br>
+            ✅ Belanja di pasar tradisional > minimarket<br>
+            ✅ Buat daftar belanja → hindari impulsif<br><br>
+            <b>Langkah Bertahap:</b><br>
+            🎯 Bulan 1: Audit sampah + bawa tas belanja<br>
+            🎯 Bulan 2: Ganti 3 produk sekali pakai<br>
+            🎯 Bulan 3: Mulai kompos<br>
+            🎯 Bulan 4: Evaluasi & tingkatkan<br><br>
+            <b>Tips Sukses:</b><br>
+            ✓ Libatkan seluruh keluarga<br>
+            ✓ Fokus pada progres, bukan kesempurnaan<br>
+            ✓ Cari komunitas zero waste untuk dukungan<br>
+            ✓ Rayakan setiap kemenangan kecil!<br><br>
+            <i>Setiap langkah kecil = kontribusi besar untuk bumi! 🌍</i>`
+        },
+        {
+            keywords: ['kebersihan sungai', 'jaga sungai'],
+            question: "Mengapa penting menjaga kebersihan sungai?",
+            answer: `<b>🌊 Pentingnya Menjaga Kebersihan Sungai:</b><br><br>
+            <b>Ekologi:</b><br>
+            🐟 Habitat ikan & biota air<br>
+            🌿 Penyeimbang ekosistem darat-air<br>
+            🦆 Tempat hidup burung, amfibi, serangga<br><br>
+            <b>Manusia:</b><br>
+            💧 Sumber air bersih (minum, mandi, irigasi)<br>
+            🍚 Mendukung pertanian & ketahanan pangan<br>
+            💰 Mata pencaharian: nelayan, wisata, transportasi<br><br>
+            <b>Bencana:</b><br>
+            🌊 Mencegah banjir (sungai lancar = air mengalir)<br>
+            🏞️ Mencegah longsor (vegetasi tepi sungai menahan tanah)<br><br>
+            <b>Kesehatan:</b><br>
+            🩺 Kurangi penyakit: diare, tipus, leptospirosis<br>
+            🩺 Udara lebih segar (sungai bersih = tidak bau)<br><br>
+            <b>Ancaman:</b><br>
+            ❌ Sampah menyumbat aliran → banjir<br>
+            ❌ Limbah industri → racun bagi biota & manusia<br>
+            ❌ Erosi → pendangkalan → daya tampung berkurang<br><br>
+            <b>Cara Menjaga:</b><br>
+            ✓ Jangan buang sampah ke sungai<br>
+            ✓ Tanam vegetasi asli di bantaran<br>
+            ✓ Laporkan pembuangan limbah ilegal<br>
+            ✓ Ikut gerakan bersih sungai<br>
+            ✓ Edukasi masyarakat sekitar<br><br>
+            <b>Fakta:</b><br>
+            • 80% limbah global dibuang ke sungai/laut<br>
+            • 2 miliar orang bergantung pada air sungai<br><br>
+            <i>"Sungai bersih = kehidupan berkelanjutan." Mari jaga warisan alam ini! 💙</i>`
+        },
+        {
+            keywords: ['buang sampah sembarangan', 'kenapa buang sembarangan'],
+            question: "Mengapa masyarakat masih membuang sampah sembarangan?",
+            answer: `<b>🤔 Penyebab Buang Sampah Sembarangan:</b><br><br>
+            <b>Faktor Pengetahuan:</b><br>
+            ❓ Tidak tahu dampak jangka panjang<br>
+            ❓ Tidak paham cara pilah & buang yang benar<br>
+            ❓ Minim edukasi sejak dini<br><br>
+            <b>Faktor Infrastruktur:</b><br>
+            🗑️ Tempat sampah jarang/tidak terpilah<br>
+            🗑️ Jadwal pengangkutan tidak teratur<br>
+            🗑️ TPA overload → sampah menumpuk di jalan<br><br>
+            <b>Faktor Sosial-Budaya:</b><br>
+            👥 "Ah, orang lain juga buang" (mentalitas ikut-ikutan)<br>
+            👥 Tidak ada sanksi sosial yang kuat<br>
+            👥 Kebiasaan turun-temurun<br><br>
+            <b>Faktor Ekonomi:</b><br>
+            💸 Biaya buang sampah resmi dirasa mahal<br>
+            💸 Tidak ada insentif untuk perilaku baik<br><br>
+            <b>Faktor Psikologis:</b><br>
+            🧠 "Nanti juga ada petugas yang bersihkan"<br>
+            🧠 Tidak merasa memiliki ruang publik<br><br>
+            <b>Solusi:</b><br>
+            ✅ Edukasi berkelanjutan & kreatif<br>
+            ✅ Infrastruktur memadai & mudah diakses<br>
+            ✅ Sanksi tegas + reward untuk yang patuh<br>
+            ✅ Libatkan masyarakat dalam pengambilan keputusan<br>
+            ✅ Jadikan contoh: pemimpin & tokoh masyarakat<br><br>
+            <b>Kunci:</b><br>
+            Perubahan butuh waktu, konsistensi, & kolaborasi semua pihak.<br><br>
+            <i>"Perilaku berubah ketika sistem berubah." Mari bangun sistem yang mendukung kebaikan! 🌱</i>`
+        },
+        {
+            keywords: ['solusi sampah plastik', 'atasi plastik'],
+            question: "Apa solusi terbaik untuk mengatasi sampah plastik?",
+            answer: `<b>✨ Solusi Komprehensif Sampah Plastik:</b><br><br>
+            <b>Level Individu:</b><br>
+            ✅ Tolak plastik sekali pakai (sedotan, kantong)<br>
+            ✅ Bawa wadah & botol sendiri<br>
+            ✅ Pilih produk dengan kemasan daur ulang<br>
+            ✅ Pilah plastik untuk daur ulang<br><br>
+            <b>Level Komunitas:</b><br>
+            ✅ Bank sampah & dropbox plastik<br>
+            ✅ Workshop daur ulang kreatif<br>
+            ✅ Kampanye "Plastic-Free Day"<br>
+            ✅ Kolaborasi dengan UMKM ramah lingkungan<br><br>
+            <b>Level Bisnis:</b><br>
+            ✅ Desain produk: kemasan minimal, bisa diisi ulang<br>
+            ✅ Program take-back: konsumen kembalikan kemasan<br>
+            ✅ Investasi teknologi daur ulang<br>
+            ✅ Transparansi jejak lingkungan produk<br><br>
+            <b>Level Pemerintah:</b><br>
+            ✅ Regulasi: larangan plastik sekali pakai<br>
+            ✅ Insentif: pajak untuk produsen plastik, subsidi daur ulang<br>
+            ✅ Infrastruktur: TPS3R, fasilitas daur ulang<br>
+            ✅ Penegakan hukum: denda pembuangan liar<br><br>
+            <b>Inovasi Teknologi:</b><br>
+            🔬 Bioplastik dari singkong, rumput laut<br>
+            🔬 Enzim pemecah plastik (ideonella sakaiensis)<br>
+            🔬 Plastic-to-fuel: plastik jadi bahan bakar<br>
+            🔬 Aplikasi pelacakan sampah (blockchain)<br><br>
+            <b>Prioritas:</b><br>
+            1️⃣ Reduce (kurangi penggunaan)<br>
+            2️⃣ Reuse (gunakan ulang)<br>
+            3️⃣ Recycle (daur ulang)<br>
+            4️⃣ Recovery (energi)<br>
+            5️⃣ Dispose (TPA - terakhir)<br><br>
+            <i>Tidak ada solusi tunggal. Butuh aksi kolektif dari semua level! 🌍</i>`
+        },
+        {
+            keywords: ['denda sampah', 'efektif denda'],
+            question: "Apakah denda efektif untuk mengurangi sampah?",
+            answer: `<b>⚖️ Denda & Efektivitasnya:</b><br><br>
+            <b>Kelebihan Denda:</b><br>
+            ✅ Efek jera langsung bagi pelanggar<br>
+            ✅ Sumber pendapatan untuk program kebersihan<br>
+            ✅ Sinyal tegas bahwa perilaku tidak diterima<br>
+            ✅ Mendorong kepatuhan jangka pendek<br><br>
+            <b>Kekurangan Denda:</b><br>
+            ❌ Tidak mengubah perilaku jangka panjang tanpa edukasi<br>
+            ❌ Berpotensi diskriminatif (beban lebih berat bagi masyarakat berpenghasilan rendah)<br>
+            ❌ Butuh pengawasan & penegakan yang konsisten (biaya tinggi)<br>
+            ❌ Bisa menimbulkan resistensi jika tidak disertai dialog<br><br>
+            <b>Studi Kasus:</b><br>
+            🇸🇬 Singapura: Denda + edukasi + infrastruktur = sangat efektif<br>
+            🇮🇩 Indonesia: Denda ada di UU, tapi penegakan lemah → dampak minimal<br><br>
+            <b>Solusi Seimbang:</b><br>
+            🎯 <b>Denda + Edukasi</b>: Hukuman + pemahaman = perubahan berkelanjutan<br>
+            🎯 <b>Progressive Enforcement</b>: Peringatan → denda ringan → denda berat<br>
+            🎯 <b>Community-Based</b>: Libatkan warga dalam pengawasan<br>
+            🎯 <b>Positive Reinforcement</b>: Reward untuk perilaku baik (lebih efektif dari hukuman!)<br><br>
+            <b>Alternatif/ Pelengkap:</b><br>
+            ✅ Sistem deposit: bayar saat beli, kembali saat kembalikan kemasan<br>
+            ✅ Pajak plastik: produsen bayar, konsumen lebih sadar<br>
+            ✅ Program insentif: poin, diskon untuk pilah sampah<br><br>
+            <i>"Hukuman mengubah perilaku karena takut. Edukasi mengubah karena paham. Kombinasi keduanya = perubahan sejati." 🌱</i>`
+        },
+        {
+            keywords: ['teknologi sampah', 'teknologi pengelolaan sampah'],
+            question: "Bagaimana peran teknologi dalam pengelolaan sampah?",
+            answer: `<b>🔧 Teknologi & Pengelolaan Sampah:</b><br><br>
+            <b>Pemilahan & Pengumpulan:</b><br>
+            🤖 Robot pemilah sampah (AI + computer vision)<br>
+            📱 Aplikasi jadwal jemput sampah (GoClean, Waste4Change)<br>
+            🗑️ Smart bin: sensor penuh → notifikasi petugas<br>
+            📍 GPS tracking: optimasi rute truk sampah<br><br>
+            <b>Pengolahan:</b><br>
+            🔥 Waste-to-Energy: sampah jadi listrik (insinerator modern)<br>
+            🦠 Bioreaktor: percepat penguraian organik<br>
+            ⚗️ Pyrolysis: plastik jadi bahan bakar cair<br>
+            🧬 Enzim & bakteri: urai plastik lebih cepat<br><br>
+            <b>Daur Ulang:</b><br>
+            🔄 Mesin pencacah & pencuci otomatis<br>
+            🧪 Teknologi pemisahan material (magnet, udara, air)<br>
+            🧵 3D printing dari filamen daur ulang<br><br>
+            <b>Monitoring & Data:</b><br>
+            📊 IoT sensor: pantau kualitas udara/air di TPA<br>
+            🗺️ GIS mapping: identifikasi titik rawan sampah<br>
+            📈 Big Data: prediksi volume sampah, optimasi kebijakan<br><br>
+            <b>Edukasi & Partisipasi:</b><br>
+            🎮 Gamifikasi: aplikasi poin untuk pilah sampah<br>
+            🌐 Platform crowdsourcing: warga laporkan sampah liar<br>
+            📚 AR/VR: simulasi dampak sampah untuk edukasi<br><br>
+            <b>Tantangan:</b><br>
+            ❌ Biaya investasi tinggi<br>
+            ❌ Butuh SDM terampil<br>
+            ❌ Adaptasi dengan kondisi lokal<br><br>
+            <b>Peluang Indonesia:</b><br>
+            ✅ Startup lokal: Waste4Change, Gringgo, Mall Sampah<br>
+            ✅ Kolaborasi kampus-industri-pemerintah<br>
+            ✅ Teknologi tepat guna: sederhana, terjangkau, efektif<br><br>
+            <i>Teknologi bukan solusi ajaib, tapi alat ampuh jika dipadukan dengan kebijakan & partisipasi masyarakat! 🚀</i>`
+        },
+        {
+            keywords: ['dampak jangka panjang', 'sampah tidak dikelola'],
+            question: "Apa dampak jangka panjang jika sampah tidak dikelola?",
+            answer: `<b>⚠️ Dampak Jangka Panjang Sampah Tidak Dikelola:</b><br><br>
+            <b>Lingkungan:</b><br>
+            🌍 <b>2030</b>: TPA overload → sampah menumpuk di permukiman<br>
+            🌍 <b>2040</b>: Mikroplastik di seluruh rantai makanan → ekosistem kolaps<br>
+            🌍 <b>2050</b>: Laut lebih banyak plastik daripada ikan (studi Ellen MacArthur)<br><br>
+            <b>Kesehatan:</b><br>
+            🩺 Peningkatan penyakit: kanker, gangguan hormon, ISPA kronis<br>
+            🩺 Generasi mendatang: paparan kumulatif bahan kimia → risiko kesehatan lebih tinggi<br>
+            🩺 Beban ekonomi: biaya pengobatan meningkat<br><br>
+            <b>Ekonomi:</b><br>
+            💸 Pariwisata turun: destinasi kotor → wisatawan hindari<br>
+            💸 Perikanan terganggu: ikan tercemar → nilai jual turun<br>
+            💸 Biaya remediasi: membersihkan lingkungan rusak = sangat mahal<br><br>
+            <b>Sosial:</b><br>
+            👥 Konflik: masyarakat vs pengelola sampah vs pemerintah<br>
+            👥 Ketimpangan: komunitas marginal paling terdampak<br>
+            👥 Hilangnya kearifan lokal: tradisi ramah lingkungan punah<br><br>
+            <b>Iklim:</b><br>
+            🌡️ Emisi metana dari TPA → percepat pemanasan global<br>
+            🌡️ Deforestasi: cari lahan baru untuk TPA → hutan berkurang<br><br>
+            <b>Skenario Optimis (Jika Beraksi Sekarang):</b><br>
+            ✅ 2030: 50% sampah terpilah & didaur ulang<br>
+            ✅ 2040: Ekonomi sirkular berjalan, sampah = sumber daya<br>
+            ✅ 2050: Zero waste to landfill tercapai<br><br>
+            <b>Kunci:</b><br>
+            Setiap aksi hari ini = investasi untuk masa depan.<br><br>
+            <i>"Kita tidak mewarisi bumi dari nenek moyang, tapi meminjamnya dari anak cucu." - Native American Proverb 🌍</i>`
+        },
+        {
+            keywords: ['semua sampah didaur ulang', 'plastik tidak bisa didaur'],
+            question: "Apakah semua sampah bisa didaur ulang?",
+            answer: `<b>❌ Tidak Semua Sampah Bisa Daur Ulang:</b><br><br>
+            <b>Bisa Daur Ulang ✅:</b><br>
+            • Plastik #1 (PET): botol minuman<br>
+            • Plastik #2 (HDPE): wadah sampo, botol susu<br>
+            • Kertas/kardus bersih<br>
+            • Kaleng aluminium & baja<br>
+            • Kaca bening/warna (dipisah)<br>
+            • Logam: besi, tembaga, aluminium<br><br>
+            <b>Sulit/Tidak Bisa Daur Ulang ❌:</b><br>
+            • Plastik multilayer: kemasan snack, kopi sachet<br>
+            • Styrofoam: struktur seluler sulit diproses<br>
+            • Kertas berminyak/kotor: pizza box, tisu bekas<br>
+            • Kaca pyrex/cermin: komposisi kimia berbeda<br>
+            • Popok & pembalut: campuran material kompleks<br>
+            • Sampah B3: butuh penanganan khusus, bukan daur ulang biasa<br><br>
+            <b>Alasan Tidak Bisa:</b><br>
+            🔸 <b>Teknis</b>: Material campuran sulit dipisahkan<br>
+            🔸 <b>Ekonomis</b>: Biaya daur ulang > nilai produk jadi<br>
+            🔸 <b>Kualitas</b>: Material turun kualitas setelah daur (downcycling)<br>
+            🔸 <b>Infrastruktur</b>: Tidak ada fasilitas pengolahan di daerah<br><br>
+            <b>Solusi untuk Yang Tidak Bisa:</b><br>
+            🔄 <b>Reduce</b>: Hindari beli produk dengan material sulit daur<br>
+            🔄 <b>Reuse</b>: Gunakan ulang sebelum buang<br>
+            🔄 <b>Recovery</b>: Jadikan sumber energi (Waste-to-Energy)<br>
+            🔄 <b>Responsible Disposal</b>: Buang di TPA dengan sistem sanitary<br><br>
+            <b>Tips:</b><br>
+            ✓ Cek kode daur ulang pada kemasan<br>
+            ✓ Pilih produk dengan material tunggal<br>
+            ✓ Dukung inovasi kemasan ramah lingkungan<br><br>
+            <i>"Daur ulang penting, tapi mengurangi & menggunakan ulang LEBIH penting." ♻️</i>`
+        },
+        {
+            keywords: ['tingkatkan kesadaran', 'awareness sampah'],
+            question: "Bagaimana cara meningkatkan kesadaran masyarakat?",
+            answer: `<b>🧠 Strategi Tingkatkan Kesadaran:</b><br><br>
+            <b>Edukasi Kreatif:</b><br>
+            🎬 Video pendek viral: dampak sampah dalam 60 detik<br>
+            🎨 Infografis warna-warni: mudah dipahami semua usia<br>
+            🎭 Teater jalanan: drama singkat tentang pilah sampah<br>
+            🎮 Game mobile: kuis & challenge ramah lingkungan<br><br>
+            <b>Experiential Learning:</b><br>
+            👁️ Kunjungan ke TPA: lihat langsung dampak sampah<br>
+            🌱 Workshop kompos: praktik langsung, hasil bisa dibawa<br>
+            ♻️ Kreasi daur ulang: ubah sampah jadi produk bernilai<br>
+            📸 Foto before-after: tunjukkan transformasi lingkungan<br><br>
+            <b>Social Influence:</b><br>
+            🌟 Libatkan tokoh masyarakat: ulama, guru, selebriti lokal<br>
+            👥 Peer education: remaja edukasi remaja<br>
+            🏆 Public recognition: penghargaan untuk warga teladan<br>
+            💬 Storytelling: kisah nyata perubahan dari aksi kecil<br><br>
+            <b>Infrastruktur Pendukung:</b><br>
+            🗑️ Tempat sampah terpilah + visual jelas (gambar, warna)<br>
+            📱 Aplikasi: panduan pilah, jadwal jemput, laporan<br>
+            📢 Media lokal: radio, koran, grup WhatsApp warga<br><br>
+            <b>Insentif:</b><br>
+            💰 Poin/tukar hadiah untuk partisipasi bank sampah<br>
+            🎁 Diskon di warung untuk bawa tas/wadah sendiri<br>
+            🏅 Sertifikat "Warga Peduli Lingkungan"<br><br>
+            <b>Kunci Sukses:</b><br>
+            ✓ Pesan positif (bukan menakut-nakuti)<br>
+            ✓ Relevan dengan kehidupan sehari-hari<br>
+            ✓ Mudah dilakukan (barrier rendah)<br>
+            ✓ Konsisten & berkelanjutan<br>
+            ✓ Libatkan masyarakat dalam desain program<br><br>
+            <i>"Kesadaran tumbuh ketika orang merasa mampu & dihargai." Mari bangun gerakan dari akar rumput! 🌱</i>`
+        },
+        {
+            keywords: ['konsumsi sampah', 'hubungan konsumsi'],
+            question: "Apa hubungan antara konsumsi dan jumlah sampah?",
+            answer: `<b>🛒 Konsumsi ↔ Sampah: Hubungan Langsung</b><br><br>
+            <b>Mekanisme:</b><br>
+            📦 Lebih banyak beli → lebih banyak kemasan → lebih banyak sampah<br>
+            🔄 Barang cepat usang (fast fashion, gadget) → lebih sering ganti → lebih banyak buang<br>
+            🎁 Budaya hadiah & impulsif → barang tidak terpakai → langsung jadi sampah<br><br>
+            <b>Data Pendukung:</b><br>
+            • 1 orang Indonesia hasilkan ~0.7 kg sampah/hari<br>
+            • 40% sampah perkotaan = kemasan plastik<br>
+            • Fast fashion: 92 juta ton tekstil terbuang/tahun global<br><br>
+            <b>Faktor Pendorong Konsumsi Berlebih:</b><br>
+            📱 Iklan digital: targeted ads → godaan beli 24/7<br>
+            💳 Kemudahan pembayaran: e-wallet, paylater → belanja impulsif<br>
+            🎯 FOMO & tren sosial: takut ketinggalan → beli tidak perlu<br>
+            🏷️ Harga murah: produk sekali pakai lebih murah dari tahan lama<br><br>
+            <b>Dampak Rantai:</b><br>
+            Konsumsi ↑ → Produksi ↑ → Eksploitasi SDA ↑ → Emisi ↑ → Sampah ↑ → Lingkungan ↓<br><br>
+            <b>Solusi: Konsumsi Sadar</b><br>
+            ✅ <b>Need vs Want</b>: Tanya "Apakah ini benar-benar saya butuhkan?"<br>
+            ✅ <b>Quality over Quantity</b>: Investasi produk tahan lama<br>
+            ✅ <b>Secondhand First</b>: Beli bekas layak pakai<br>
+            ✅ <b>Minimalist Mindset</b>: Sedikit tapi bermakna<br>
+            ✅ <b>Support Local</b>: Produk lokal = kemasan minimal, jejak karbon rendah<br><br>
+            <b>Manfaat:</b><br>
+            💰 Hemat uang<br>
+            🧘 Hidup lebih tenang (tidak terbebani barang)<br>
+            🌍 Kontribusi nyata untuk bumi<br><br>
+            <i>"Setiap pembelian adalah suara untuk dunia seperti apa yang kita inginkan." Pilih bijak! 🌱</i>`
+        },
+        {
+            keywords: ['tanggung jawab sampah', 'siapa bertanggung jawab'],
+            question: "Siapa yang paling bertanggung jawab terhadap masalah sampah?",
+            answer: `<b>🤝 Tanggung Jawab Bersama: Tidak Ada Kambing Hitam</b><br><br>
+            <b>Produsen:</b><br>
+            🏭 Desain produk: kemasan minimal, bisa didaur, tahan lama<br>
+            🏭 Extended Producer Responsibility (EPR): tanggung jawab hingga akhir siklus hidup produk<br>
+            🏭 Transparansi: jejak lingkungan produk<br><br>
+            <b>Pemerintah:</b><br>
+            🏛️ Regulasi: larangan plastik, standar daur ulang<br>
+            🏛️ Infrastruktur: TPS, TPA, fasilitas daur ulang<br>
+            🏛️ Penegakan hukum: sanksi tegas, insentif positif<br>
+            🏛️ Edukasi nasional: kurikulum, kampanye massal<br><br>
+            <b>Konsumen:</b><br>
+            👤 Pilihan belanja: dukung produk ramah lingkungan<br>
+            👤 Perilaku: pilah, kurangi, daur ulang<br>
+            👤 Advokasi: suara untuk kebijakan berkelanjutan<br><br>
+            <b>Komunitas:</b><br>
+            👥 Inisiatif lokal: bank sampah, kompos bersama<br>
+            👥 Peer pressure positif: norma sosial peduli lingkungan<br>
+            👥 Kolaborasi: warga + pemerintah + swasta<br><br>
+            <b>Media & Influencer:</b><br>
+            📢 Amplifikasi isu: jadikan prioritas publik<br>
+            📢 Edukasi kreatif: konten yang menggerakkan<br>
+            📢 Akuntabilitas: soroti kinerja pemangku kepentingan<br><br>
+            <b>Prinsip Keadilan:</b><br>
+            ⚖️ <b>Common but Differentiated Responsibilities</b>: Semua bertanggung jawab, tapi kapasitas & kontribusi berbeda<br>
+            ⚖️ Produsen besar → tanggung jawab lebih besar (sumber masalah utama)<br>
+            ⚖️ Masyarakat berpenghasilan rendah → butuh dukungan, bukan hukuman<br><br>
+            <b>Kunci Kolaborasi:</b><br>
+            🔗 Dialog multipihak: dengar semua perspektif<br>
+            🔗 Data transparan: dasar kebijakan berbasis bukti<br>
+            🔗 Aksi konkret: dari komitmen ke implementasi<br><br>
+            <i>"Masalah sampah terlalu besar untuk diselesaikan sendiri, tapi terlalu penting untuk diabaikan." Mari bergerak bersama! 🌍</i>`
+        },
+        {
+            keywords: ['masa depan lingkungan', 'sampah meningkat'],
+            question: "Bagaimana masa depan lingkungan jika sampah terus meningkat?",
+            answer: `<b>🔮 Skenario Masa Depan: Dua Jalan</b><br><br>
+            <b>❌ Skenario Pesimis (Business as Usual):</b><br><br>
+            <b>2030:</b><br>
+            • TPA perkotaan penuh → sampah menumpuk di jalan<br>
+            • Mikroplastik terdeteksi di 90% air minum global<br>
+            • Biaya kesehatan akibat polusi sampah naik 30%<br><br>
+            <b>2040:</b><br>
+            • Laut: lebih banyak plastik daripada ikan (berat)<br>
+            • Tanah: kesuburan turun akibat kontaminasi<br>
+            • Iklim: emisi metana dari sampah = 10% emisi global<br><br>
+            <b>2050:</b><br>
+            • Krisis air: sumber tercemar → konflik akses<br>
+            • Kehilangan keanekaragaman hayati: ekosistem kolaps<br>
+            • Ketimpangan: komunitas marginal paling terdampak<br><br>
+            <b>✅ Skenario Optimis (Aksi Kolektif Sekarang):</b><br><br>
+            <b>2030:</b><br>
+            • 50% kota terapkan sistem pilah sampah efektif<br>
+            • Inovasi material: bioplastik, kemasan edible<br>
+            • Ekonomi sirkular: sampah = sumber daya bernilai<br><br>
+            <b>2040:</b><br>
+            • Zero waste to landfill di kota-kota maju<br>
+            • Teknologi daur ulang canggih: plastik → bahan bakar, tekstil<br>
+            • Kesadaran global: konsumsi sadar jadi norma<br><br>
+            <b>2050:</b><br>
+            • Restorasi ekosistem: sungai, laut, tanah pulih<br>
+            • Generasi muda: pemimpin lingkungan, inovasi hijau<br>
+            • Bumi berkelanjutan: warisan layak untuk anak cucu<br><br>
+            <b>Faktor Penentu:</b><br>
+            🎯 Kepemimpinan: kebijakan berani & konsisten<br>
+            🎯 Inovasi: teknologi tepat guna, terjangkau<br>
+            🎯 Partisipasi: masyarakat sebagai agen perubahan<br>
+            🎯 Keadilan: transisi inklusif, tidak tinggalkan siapa pun<br><br>
+            <b>Pesan Harapan:</b><br>
+            > "Masa depan tidak ditentukan oleh prediksi, tapi oleh pilihan hari ini."<br><br>
+            <i>Setiap aksi kecil Anda = batu bata untuk masa depan yang lebih hijau. Mulai sekarang! 🌱✨</i>`
+        }
+    ];
+
+    // ============================================
+    // FUNGSI MATCHING & RESPON (MANUAL - TANPA API)
+    // ============================================
+
+    async function searchFromGoogle(query) {
+        // Tidak pakai API Google, langsung pakai database manual
+        return getAnswerFromDatabase(query);
+    }
+
+    function getAnswerFromDatabase(query) {
+        const q = query.toLowerCase().trim();
+        
+        // 1. Cari berdasarkan keyword matching (exact)
+        for (const item of chatbotDatabase) {
+            for (const keyword of item.keywords) {
+                if (q.includes(keyword)) {
+                    return formatAnswer(item.question, item.answer);
+                }
+            }
+        }
+        
+        // 2. Fuzzy matching sederhana (cek kata per kata)
+        const words = q.split(' ').filter(w => w.length > 3);
+        let bestMatch = null;
+        let bestScore = 0;
+        
+        for (const item of chatbotDatabase) {
+            let score = 0;
+            for (const word of words) {
+                if (item.question.toLowerCase().includes(word)) score += 2;
+                for (const kw of item.keywords) {
+                    if (kw.includes(word)) score += 1;
+                }
+            }
+            if (score > bestScore) {
+                bestScore = score;
+                bestMatch = item;
+            }
+        }
+        
+        if (bestScore >= 2 && bestMatch) {
+            return formatAnswer(bestMatch.question, bestMatch.answer);
+        }
+        
+        // 3. Tidak ada match - berikan saran
+        return getSuggestionResponse(q);
+    }
+
+    function formatAnswer(question, answer) {
+        return `<b>❓ ${question}</b><br><br>${answer}`;
+    }
+
+    function getSuggestionResponse(query) {
+        // Cari pertanyaan yang mirip untuk saran
+        const suggestions = chatbotDatabase
+            .map(item => item.question)
+            .filter(q => {
+                const words = query.split(' ');
+                return words.some(w => w.length > 3 && q.toLowerCase().includes(w));
+            })
+            .slice(0, 3);
+        
+        if (suggestions.length > 0) {
+            return `Maaf, saya tidak menemukan jawaban persis untuk "<b>${query}</b>".<br><br>
+                    Mungkin Anda mencari:<br>
+                    ${suggestions.map((s, i) => `${i+1}. <i>"${s}"</i>`).join('<br>')}<br><br>
+                    Atau coba tanya dengan kata kunci berbeda! 😊`;
+        }
+        
+        return `Maaf, saya belum punya jawaban untuk "<b>${query}</b>".<br><br>
+                Coba tanya seputar:<br>
+                • Jenis & dampak sampah<br>
+                • Cara daur ulang & kompos<br>
+                • Konsep 3R & zero waste<br>
+                • Pengelolaan sampah di sekolah/kota<br><br>
+                Atau kunjungi: <a href="https://www.google.com/search?q=${encodeURIComponent(query + ' sampah lingkungan')}" target="_blank" style="color:#10B981;">🔍 Google Search</a>`;
+    }
+
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    // Show notification dot after 5 seconds
+    setTimeout(() => {
+        if (!isChatOpen) {
+            document.getElementById('notifDot').style.display = 'flex';
+        }
+    }, 5000);
+    </script>
+
+    <!-- Footer Copyright -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <p>&copy; <span id="currentYear"></span> TrashTrack. All rights reserved.</p>
+            <p class="footer-credit">Created by <strong>Almira, Gracesita</strong></p>
+        </div>
+    </footer>
+
+    <style>
+        .site-footer {
+            background: #1E293B;
+            color: #CBD5E1;
+            text-align: center;
+            padding: 1.5rem 1rem 4rem 1rem; /* padding-bottom besar agar tidak tertutup bottom-nav */
+            font-size: 0.85rem;
+            margin-top: 2rem;
+        }
+        .footer-content p {
+            margin: 0.3rem 0;
+        }
+        .footer-credit {
+            color: #94A3B8;
+            font-size: 0.8rem;
+        }
+        .footer-credit strong {
+            color: #10B981;
+        }
+        /* Responsive: adjust padding for mobile */
+        @media (max-width: 768px) {
+            .site-footer {
+                padding-bottom: 5rem;
+            }
+        }
+    </style>
+
+    <script>
+        // Auto-update tahun copyright
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>

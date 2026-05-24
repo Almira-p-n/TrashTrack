@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Scan Sampah - TrashTrack{% endblock %}
+{% block content %}
+<div class="scan-container">
+    <h1 class="page-title"><i class="fas fa-camera"></i> Scan Sampah</h1>
+    
+    <div class="scan-box">
+        <!-- Camera Preview -->
+        <div class="camera-preview" id="cameraPreview">
+            <div class="preview-placeholder">
+                <i class="fas fa-camera"></i>
+                <p>Kamera akan muncul di sini</p>
+            </div>
+            <video id="video" autoplay playsinline style="display:none;"></video>
+            <canvas id="canvas" style="display:none;"></canvas>
+        </div>
+        
+        <!-- Camera Controls -->
+        <div class="scan-controls">
+            <button class="btn-camera" id="startCamera">
+                <i class="fas fa-video"></i> Aktifkan Kamera
+            </button>
+            <button class="btn-capture" id="captureBtn" style="display:none;">
+                <i class="fas fa-camera"></i>
+            </button>
+        </div>
+        
+        <!-- Divider -->
+        <div class="divider"><span>atau</span></div>
+        
+        <!-- Upload Alternative -->
+        <label for="fileUpload" class="btn-upload-alternative">
+            <i class="fas fa-upload"></i>
+            Upload Gambar dari Galeri
+        </label>
+        <input type="file" id="fileUpload" accept="image/*" style="display:none;">
+        
+        <!-- Preview Section -->
+        <div class="preview-section" id="previewSection" style="display:none;">
+            <h3>Preview Gambar</h3>
+            <img id="imagePreview" src="" alt="Preview">
+            <div class="preview-actions">
+                <button class="btn-secondary" id="retakeBtn">
+                    <i class="fas fa-redo"></i> Ambil Ulang
+                </button>
+                <button class="btn-primary" id="confirmBtn">
+                    <i class="fas fa-check"></i> Proses
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="scan-tips">
+        <h3><i class="fas fa-lightbulb"></i> Tips Scan yang Baik</h3>
+        <ul>
+            <li>Pastikan pencahayaan cukup</li>
+            <li>Fokuskan kamera pada sampah</li>
+            <li>Atau upload foto dari galeri dengan nama deskriptif</li>
+            <li>Contoh: botol_plastik.jpg, daun_kering.jpg</li>
+        </ul>
+    </div>
+</div>
+
+<form id="scanForm" method="POST" enctype="multipart/form-data" style="display:none;">
+    <input type="hidden" name="gambar_data" id="hiddenImage">
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let stream = null;
+    let capturedDataUrl = null;
+    
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const startCameraBtn = document.getElementById('startCamera');
+    const captureBtn = document.getElementById('captureBtn');
+    const fileUpload = document.getElementById('fileUpload');
+    const previewSection = document.getElementById('previewSection');
+    const imagePreview = document.getElementById('imagePreview');
+    const retakeBtn = document.getElementById('retakeBtn');
+    const confirmBtn = document.getElementById('confirmBtn');
+    const scanForm = document.getElementById('scanForm');
+    
+    // Start Camera
+    startCameraBtn.addEventListener('click', async () => {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: 'environment' } 
+            });
+            video.srcObject = stream;
+            video.style.display = 'block';
+            document.querySelector('.preview-placeholder').style.display = 'none';
+            startCameraBtn.style.display = 'none';
+            captureBtn.style.display = 'block';
+        } catch (err) {
+            alert('Kamera tidak tersedia. Silakan upload gambar dari galeri.');
+        }
+    });
+    
+    // Capture
+    captureBtn.addEventListener('click', () => {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        capturedDataUrl = canvas.toDataURL('image/jpeg');
+        showPreview(capturedDataUrl);
+    });
+    
+    // File Upload
+    fileUpload.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                capturedDataUrl = e.target.result;
+                showPreview(capturedDataUrl);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    // Show Preview
+    function showPreview(dataUrl) {
+        if (stream) stream.getTracks().forEach(track => track.stop());
+        video.style.display = 'none';
+        previewSection.style.display = 'block';
+        captureBtn.style.display = 'none';
+        imagePreview.src = dataUrl;
+    }
+    
+    // Retake
+    retakeBtn.addEventListener('click', () => {
+        capturedDataUrl = null;
+        previewSection.style.display = 'none';
+        startCameraBtn.style.display = 'block';
+        video.style.display = 'none';
+        document.querySelector('.preview-placeholder').style.display = 'flex';
+    });
+    
+    // Confirm & Submit
+    confirmBtn.addEventListener('click', () => {
+        if (!capturedDataUrl) {
+            alert('Ambil atau upload gambar dulu!');
+            return;
+        }
+        document.getElementById('hiddenImage').value = capturedDataUrl;
+        scanForm.submit();
+    });
+</script>
+{% endblock %}
