@@ -168,7 +168,32 @@ def delete_all_history():
     flash('🗑️ Semua riwayat dan gambar berhasil dihapus!', 'success')
     return redirect(url_for('history'))
 
+# if __name__ == '__main__':
+#     import os
+#     port = int(os.environ.get('PORT', 5000))
+#     app.run(host='0.0.0.0', port=port)
+
 if __name__ == '__main__':
     import os
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    import ssl
+
+    # Cek apakah file sertifikat (HTTPS) sudah ada di folder project
+    if os.path.exists('cert.pem') and os.path.exists('key.pem'):
+        # 1. Setup SSL Context (Biar HP mengizinkan kamera)
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        context.load_cert_chain(certfile='cert.pem', keyfile='key.pem')
+
+        print("\n" + "="*60)
+        print(" SERVER HTTPS LOKAL AKTIF!")
+        print("📱 Akses di HP: https://<IP_LAPTOP>:5000")
+        print("💻 Akses di Laptop: https://localhost:5000")
+        print("="*60 + "\n")
+
+        # 2. Jalankan Server
+        # host='0.0.0.0' -> Agar bisa diakses perangkat lain (HP)
+        app.run(host='0.0.0.0', port=5000, ssl_context=context)
+        
+    else:
+        print("⚠️ File sertifikat (cert.pem/key.pem) tidak ditemukan.")
+        print("💡 Jalankan: python generate_cert.py dulu ya!")
+        app.run(host='0.0.0.0', port=5000)
