@@ -170,16 +170,5 @@ def delete_all_history():
 
 if __name__ == '__main__':
     import os
-    import ssl
-    
-    if os.path.exists('cert.pem') and os.path.exists('key.pem'):
-        context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-        context.load_cert_chain('cert.pem', 'key.pem')
-        
-        print("\n🔒 HTTPS Aktif!")
-        print("📱 Akses dari HP: https://<IP_LAPTOP>:5000")
-        print("💻 Akses dari laptop: https://localhost:5000\n")
-        
-        app.run(debug=True, host='0.0.0.0', port=5000, ssl_context=context)
-    else:
-        print("❌ Sertifikat tidak ditemukan. Jalankan: python generate_cert.py")
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
