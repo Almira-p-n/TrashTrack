@@ -451,6 +451,32 @@
             bottom: 85px;
         }
     }
+
+    /* Animasi titik-titik mengetik baru */
+    .typing-dots {
+        display: flex;
+        gap: 5px;
+        padding: 12px 16px;
+        background: white;
+        border-radius: 12px;
+        border-bottom-left-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .typing-dots span {
+        width: 8px;
+        height: 8px;
+        background: #10B981;
+        border-radius: 50%;
+        animation: typingBounce 1.4s infinite ease-in-out both;
+    }
+    .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0s; }
+
+    @keyframes typingBounce {
+        0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+        40% { transform: scale(1); opacity: 1; }
+    }
     </style>
 
     <script>
@@ -479,68 +505,50 @@
         
         if (!message) return;
         
-        // User message
+        // 1. Tampilkan pesan user
         const userDiv = document.createElement('div');
         userDiv.className = 'message user-message';
-        userDiv.innerHTML = `
-            <div class="message-text">${escapeHtml(message)}</div>
-        `;
+        userDiv.innerHTML = `<div class="message-text">${escapeHtml(message)}</div>`;
         messages.appendChild(userDiv);
         
         input.value = '';
         messages.scrollTop = messages.scrollHeight;
         
-        // Typing indicator
+        // 2. Tampilkan indikator "sedang mengetik..."
         const typingDiv = document.createElement('div');
         typingDiv.className = 'message bot-message';
-        typingDiv.id = 'typing';
+        typingDiv.id = 'typing-indicator';
         typingDiv.innerHTML = `
             <div class="message-content">
                 <i class="fas fa-robot"></i>
-                <div class="typing-indicator">
-                    <span></span>
-                    <span></span>
-                    <span></span>
+                <div class="typing-dots">
+                    <span></span><span></span><span></span>
                 </div>
             </div>
         `;
         messages.appendChild(typingDiv);
         messages.scrollTop = messages.scrollHeight;
         
-        // Search from Google
-        try {
-            const response = await searchFromGoogle(message);
-            
-            // Remove typing indicator
-            typingDiv.remove();
-            
-            // Bot response
-            const botDiv = document.createElement('div');
-            botDiv.className = 'message bot-message';
-            botDiv.innerHTML = `
-                <div class="message-content">
-                    <i class="fas fa-robot"></i>
-                    <div class="message-text">${response}</div>
-                </div>
-            `;
-            messages.appendChild(botDiv);
-            messages.scrollTop = messages.scrollHeight;
-            
-        } catch (error) {
-            typingDiv.remove();
-            
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'message bot-message';
-            errorDiv.innerHTML = `
-                <div class="message-content">
-                    <i class="fas fa-robot"></i>
-                    <div class="message-text">
-                        Maaf, terjadi kesalahan saat mencari informasi. Coba lagi ya! 😊
-                    </div>
-                </div>
-            `;
-            messages.appendChild(errorDiv);
-        }
+        // 3. Delay simulasi mengetik (1.5 - 2.5 detik acak)
+        const delay = Math.floor(Math.random() * 1000) + 1500;
+        await new Promise(resolve => setTimeout(resolve, delay));
+        
+        // 4. Cari jawaban dari database
+        const response = getAnswerFromDatabase(message);
+        
+        // 5. Hapus indikator & tampilkan jawaban bot
+        typingDiv.remove();
+        
+        const botDiv = document.createElement('div');
+        botDiv.className = 'message bot-message';
+        botDiv.innerHTML = `
+            <div class="message-content">
+                <i class="fas fa-robot"></i>
+                <div class="message-text">${response}</div>
+            </div>
+        `;
+        messages.appendChild(botDiv);
+        messages.scrollTop = messages.scrollHeight;
     }
 
     // ============================================
@@ -1783,6 +1791,83 @@
             <b>Pesan Harapan:</b><br>
             > "Masa depan tidak ditentukan oleh prediksi, tapi oleh pilihan hari ini."<br><br>
             <i>Setiap aksi kecil Anda = batu bata untuk masa depan yang lebih hijau. Mulai sekarang! 🌱✨</i>`
+        },
+        {
+            keywords: ['manfaat daur ulang', 'keuntungan recycle', 'untung daur ulang'],
+            question: "Apa manfaat daur ulang?",
+            answer: `<b>✨ Manfaat Daur Ulang:</b><br><br>
+                    <b>Lingkungan:</b><br>
+                    ✅ Kurangi sampah di TPA<br>
+                    ✅ Hemat sumber daya alam<br>
+                    ✅ Kurangi polusi & emisi karbon<br><br>
+                    <b>Ekonomi:</b><br>
+                    ✅ Ciptakan lapangan kerja<br>
+                    ✅ Hemat biaya produksi<br>
+                    ✅ Hasilkan uang dari bank sampah<br><br>
+                    <b>Energi:</b><br>
+                    ✅ Daur ulang aluminium hemat 95% energi<br>
+                    ✅ Daur ulang kertas hemat 40% energi`
+        },
+        {
+            keywords: ['cara buat kompos', 'buat kompos', 'kompos sendiri'],
+            question: "Bagaimana cara membuat kompos?",
+            answer: `<b>🌱 Cara Membuat Kompos Sederhana:</b><br><br>
+                    <b>Bahan:</b><br>
+                    • Sampah organik (daun, sisa sayur, kulit buah)<br>
+                    • Tanah<br>
+                    • Aktivator kompos (opsional)<br><br>
+                    <b>Cara:</b><br>
+                    1. <b>Cacah</b> sampah organik kecil-kecil<br>
+                    2. <b>Siapkan wadah</b> (ember/keranjang)<br>
+                    3. <b>Lapis bergantian</b>: sampah organik + tanah<br>
+                    4. <b>Tutup rapat</b> & simpan di tempat teduh<br>
+                    5. <b>Aduk setiap 3 hari</b><br>
+                    6. Siap pakai dalam <b>2-4 minggu</b><br><br>
+                    <i>Kompos siap pakai: warna hitam, tekstur remah, bau tanah</i>`
+        },
+        {
+            keywords: [
+                'dampak sampah menumpuk',
+                'sampah menumpuk',
+                'akibat sampah menumpuk',
+                'bahaya sampah menumpuk',
+                'efek sampah menumpuk',
+                'dampak tpa',
+                'sampah berlebihan',
+                'gunungan sampah'
+            ],
+            question: "Apa dampak sampah yang menumpuk?",
+            answer: `<b>⚠️ Dampak Sampah Menumpuk:</b><br><br>
+                    
+                    <b>🌍 Lingkungan:</b><br>
+                    • <b>Pencemaran tanah</b>: Lindi (cairan sampah) meresap & merusak kesuburan<br>
+                    • <b>Pencemaran air</b>: Zat beracun masuk sungai & air tanah<br>
+                    • <b>Pencemaran udara</b>: Bau tidak sedap & gas metana (penyebab pemanasan global)<br>
+                    • <b>Rusaknya ekosistem</b>: Hewan kehilangan habitat, mikroplastik masuk rantai makanan<br><br>
+                    
+                    <b>🩺 Kesehatan Manusia:</b><br>
+                    • <b>Penyakit menular</b>: Diare, tifus, kolera dari lalat & tikus<br>
+                    • <b>ISPA</b>: Asap pembakaran sampah & partikel berbahaya<br>
+                    • <b>Kulit & alergi</b>: Kontak dengan limbah beracun<br>
+                    • <b>Stres mental</b>: Lingkungan kotor pengaruhi kenyamanan & produktivitas<br><br>
+                    
+                    <b>🌊 Bencana & Infrastruktur:</b><br>
+                    • <b>Banjir</b>: Sampah menyumbat saluran air & sungai<br>
+                    • <b>Longsor</b>: Tumpukan sampah tidak stabil di lereng<br>
+                    • <b>Kerusakan jalan</b>: Truk sampah berat merusak infrastruktur<br><br>
+                    
+                    <b>💰 Ekonomi & Sosial:</b><br>
+                    • <b>Biaya penanganan meningkat</b>: Pengangkutan & pengolahan sampah makin mahal<br>
+                    • <b>Pariwisata turun</b>: Destinasi kotor → wisatawan menghindar<br>
+                    • <b>Nilai properti turun</b>: Rumah dekat tumpukan sampah kurang diminati<br>
+                    • <b>Konflik sosial</b>: Warga vs pengelola vs pemerintah<br><br>
+                    
+                    <b>🌡️ Perubahan Iklim:</b><br>
+                    • Sampah organik di TPA menghasilkan <b>gas metana</b> (25x lebih kuat dari CO₂)<br>
+                    • Pembakaran sampah liar → emisi karbon & partikel berbahaya<br><br>
+                    
+                    <i>💡 Solusi: Kurangi sampah dari sumber, pilah, daur ulang, & kompos!</i><br>
+                    <a href="https://www.google.com/search?q=dampak+sampah+menumpuk" target="_blank" style="color:#10B981;">🔍 Cari info lebih lanjut</a>`
         }
     ];
 
@@ -1798,39 +1883,72 @@
     function getAnswerFromDatabase(query) {
         const q = query.toLowerCase().trim();
         
-        // 1. Cari berdasarkan keyword matching (exact)
+        // 1. EXACT MATCH - Cek apakah ada pertanyaan yang persis sama
         for (const item of chatbotDatabase) {
-            for (const keyword of item.keywords) {
-                if (q.includes(keyword)) {
-                    return formatAnswer(item.question, item.answer);
-                }
+            if (q === item.question.toLowerCase()) {
+                return formatAnswer(item.question, item.answer);
             }
         }
         
-        // 2. Fuzzy matching sederhana (cek kata per kata)
-        const words = q.split(' ').filter(w => w.length > 3);
+        // 2. KEYWORD PRIORITY MATCHING - Beri skor berdasarkan relevansi
         let bestMatch = null;
         let bestScore = 0;
         
         for (const item of chatbotDatabase) {
             let score = 0;
-            for (const word of words) {
-                if (item.question.toLowerCase().includes(word)) score += 2;
-                for (const kw of item.keywords) {
-                    if (kw.includes(word)) score += 1;
+            const questionWords = item.question.toLowerCase().split(' ');
+            const queryWords = q.split(' ');
+            
+            // Cek setiap keyword di database item
+            for (const keyword of item.keywords) {
+                if (q.includes(keyword)) {
+                    score += 10; // Keyword match = +10 poin
                 }
             }
+            
+            // Word-by-word matching (prioritaskan kata penting)
+            for (const word of queryWords) {
+                if (word.length < 3) continue; // Skip kata pendek
+                
+                // Kalau ada di pertanyaan database
+                if (item.question.toLowerCase().includes(word)) {
+                    score += 5;
+                }
+                
+                // Kalau ada di keywords
+                for (const keyword of item.keywords) {
+                    if (keyword.includes(word)) {
+                        score += 3;
+                    }
+                }
+            }
+            
+            // BONUS: Kalau banyak kata yang match
+            const matchedWords = queryWords.filter(w => 
+                item.question.toLowerCase().includes(w) && w.length >= 3
+            ).length;
+            
+            if (matchedWords >= 3) {
+                score += 20; // Bonus besar kalau 3+ kata match
+            } else if (matchedWords >= 2) {
+                score += 10;
+            }
+            
+            // Update best match
             if (score > bestScore) {
                 bestScore = score;
                 bestMatch = item;
             }
         }
         
-        if (bestScore >= 2 && bestMatch) {
+        // 3. RETURN HASIL - Butuh minimal score 15 untuk match
+        if (bestScore >= 15 && bestMatch) {
+            console.log(`✅ Match found: "${bestMatch.question}" (score: ${bestScore})`);
             return formatAnswer(bestMatch.question, bestMatch.answer);
         }
         
-        // 3. Tidak ada match - berikan saran
+        // 4. FUZZY SEARCH - Kalau tidak ada yang match sempurna
+        console.log(`⚠️ No exact match (best score: ${bestScore}), showing suggestions`);
         return getSuggestionResponse(q);
     }
 

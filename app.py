@@ -38,14 +38,12 @@ def index():
 def scan():
     if request.method == 'POST':
         file = None
-        original_filename = ''
+        manual_nama = request.form.get('nama_barang', '').strip()  # Ambil nama manual
         
         # Handle file upload
         if 'gambar' in request.files:
             file = request.files['gambar']
-            original_filename = file.filename
         elif 'gambar_data' in request.form:
-            # Handle base64 dari webcam
             import base64
             from io import BytesIO
             from werkzeug.datastructures import FileStorage
@@ -53,29 +51,21 @@ def scan():
             img_data = request.form['gambar_data']
             header, encoded = img_data.split(",", 1)
             data = base64.b64decode(encoded)
-            
-            original_filename = f"webcam_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
-            file = FileStorage(
-                stream=BytesIO(data),
-                filename=original_filename,
-                content_type='image/jpeg'
-            )
+            file = FileStorage(stream=BytesIO(data), filename="scan_manual.jpg", content_type='image/jpeg')
         
         if not file or file.filename == '':
             flash('❌ Tidak ada gambar yang dipilih!', 'error')
             return redirect(request.url)
         
         if file and allowed_file(file.filename):
-            # Save file
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             filename = secure_filename(f"{timestamp}_{file.filename}")
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
             
-            # Classify
-            hasil = classifier.classify(filepath, original_filename)
+            # 🔥 KLASSIFIKASI BERDASARKAN NAMA MANUAL (100% Akurat)
+            hasil = classifier.classify(filepath, original_filename=manual_nama)
             
-            # Save to database
             relative_path = f"uploads/{filename}"
             scan_entry = ScanHistory(
                 sampah_nama=hasil['nama'],
@@ -88,7 +78,6 @@ def scan():
             
             flash(f"✅ Berhasil! {hasil['nama']} → Tong {hasil['kategori'].upper()}", 'success')
             return redirect(url_for('result', scan_id=scan_entry.id))
-        
         else:
             flash('❌ Format file salah! Gunakan JPG, JPEG, atau PNG.', 'error')
             return redirect(request.url)
@@ -180,14 +169,12 @@ def delete_all_history():
     return redirect(url_for('history'))
 
 if __name__ == '__main__':
-    print("\n" + "="*60)
-    print("🚀 TrashTrack - Smart Waste Classifier")
-    print("="*60)
-    print("📱 Akses aplikasi di browser:")
-    print("   → http://localhost:5000")
-    print("   → http://127.0.0.1:5000")
-    print("\n💡 Tips: Gunakan nama file deskriptif untuk hasil akurat")
-    print("   Contoh: botol_plastik.jpg, daun_kering.jpg, baterai.jpg")
-    print("="*60 + "\n")
+    import os
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Koyeb/Cloud akan memberikan PORT environment variable.
+    # Jika tidak ada (artinya jalan di laptop), pakai port 5000.
+    port = int(os.environ.get('PORT', 5000))
+    
+    # Jalankan app di 0.0.0.0 agar bisa diakses dari luar
+    # HAPUS ssl_context=context karena Cloud sudah urus HTTPS-nya
+    app.run(host='0.0.0.0', port=port)
